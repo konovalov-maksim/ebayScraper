@@ -1,15 +1,15 @@
-import core.Scraper;
+import core.ItemsSeeker;
 
 import java.util.Arrays;
 
 public class Main {
 
-    private static Scraper scraper;
+    private static ItemsSeeker itemsSeeker;
 
-    private static String[] testQueris = new String[]{"spinning reel", "watches"};
+    private static String[] testQueries = new String[]{"spinning reel shimano", "watches"};
 
     public static void main(String[] args) {
-        scraper = new Scraper(Arrays.asList(testQueris), Scraper.Condition.NOT_SPEC);
+        itemsSeeker = new ItemsSeeker(Arrays.asList(testQueries), ItemsSeeker.Condition.NOT_SPEC);
 
     }
 }

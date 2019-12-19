@@ -4,11 +4,12 @@ import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class Scraper {
+public class ItemsSeeker {
 
     private Condition condition;
     private int maxThreads = 3;
-    private int itemsLimit = 1000;
+    private int itemsLimit = 60;
+
 
     private Deque<String> unprocessed = new ConcurrentLinkedDeque<>();
 
@@ -18,7 +19,7 @@ public class Scraper {
     private double avgPrice;
     private double avgSoldPrice;
 
-    public Scraper(List<String> queries, Condition condition) {
+    public ItemsSeeker(List<String> queries, Condition condition) {
         this.condition = condition;
         unprocessed.addAll(queries);
     }
