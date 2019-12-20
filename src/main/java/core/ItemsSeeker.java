@@ -41,19 +41,19 @@ public class ItemsSeeker {
         this.APP_NAME = appname;
         this.condition = condition;
         this.resultsLoadingListener = resultsLoadingListener;
-        client = new OkHttpClient.Builder().callTimeout(timeout, TimeUnit.MILLISECONDS).build();
         initCallback();
     }
 
     public void start() {
-        isRunning = true;
+        client = new OkHttpClient.Builder().callTimeout(timeout, TimeUnit.MILLISECONDS).build();
         prepareUrl();
+        isRunning = true;
         sendNewRequests();
     }
 
     public void stop() {
         isRunning = false;
-        resultsLoadingListener.onComplete();
+        resultsLoadingListener.onAllResultsReceived();
     }
 
     private void sendNewRequests() {
@@ -77,20 +77,23 @@ public class ItemsSeeker {
                 Result result = extractResult(response);
                 results.add(result);
                 checkIsComplete();
+                resultsLoadingListener.onResultReceived(result.getQuery());
             }
 
             @Override
             public synchronized void onFailure(@NotNull Call call, @NotNull IOException e) {
                 threads--;
-                Result result = new Result(call.request().header("keywords"));
+                String query = call.request().url().queryParameter("keywords");
+                Result result = new Result(query);
                 result.setSuccess(false);
                 checkIsComplete();
+                resultsLoadingListener.onResultReceived(query);
             }
         };
     }
 
     private void checkIsComplete() {
-        if (threads == 0 && unprocessed.isEmpty()) resultsLoadingListener.onComplete();
+        if (threads == 0 && unprocessed.isEmpty()) resultsLoadingListener.onAllResultsReceived();
     }
 
     //Extracting Result object from JSON response body
@@ -197,8 +200,8 @@ public class ItemsSeeker {
     }
 
     public interface ResultsLoadingListener {
-        void onResult();
-        void onComplete();
+        void onResultReceived(String query);
+        void onAllResultsReceived();
     }
 
     public int getMaxThreads() {

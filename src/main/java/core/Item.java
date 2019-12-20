@@ -7,14 +7,12 @@ public class Item {
     public Item(String itemId, double price) {
         ItemId = itemId;
         this.price = price;
+        isInfoFull = false;
     }
 
     private String ItemId;
-
     private boolean isInfoFull;
-
     private double price;
-
     private int soldCount;
 
     public double getPrice() {
@@ -33,19 +31,19 @@ public class Item {
         return isInfoFull;
     }
 
-    public void setInfoFull(boolean infoFull) {
+    void setInfoFull(boolean infoFull) {
         isInfoFull = infoFull;
     }
 
-    public void setItemId(String itemId) {
+    void setItemId(String itemId) {
         ItemId = itemId;
     }
 
-    public void setPrice(double price) {
+    void setPrice(double price) {
         this.price = price;
     }
 
-    public void setSoldCount(int soldCount) {
+    void setSoldCount(int soldCount) {
         this.soldCount = soldCount;
     }
 
