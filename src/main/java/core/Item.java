@@ -1,5 +1,7 @@
 package core;
 
+import java.util.Objects;
+
 public class Item {
 
     public Item(String itemId, double price) {
@@ -45,5 +47,18 @@ public class Item {
 
     public void setSoldCount(int soldCount) {
         this.soldCount = soldCount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return ItemId.equals(item.ItemId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ItemId);
     }
 }

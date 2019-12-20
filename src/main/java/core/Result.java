@@ -36,7 +36,7 @@ public class Result {
         return purchasesSum / getItemsCount();
     }
 
-    public void addItem(Item item) {
+    void addItem(Item item) {
         items.add(item);
     }
 
@@ -44,7 +44,7 @@ public class Result {
         return query;
     }
 
-    public void setQuery(String query) {
+    void setQuery(String query) {
         this.query = query;
     }
 
@@ -52,7 +52,7 @@ public class Result {
         return items;
     }
 
-    public void setItems(List<Item> items) {
+    void setItems(List<Item> items) {
         this.items = items;
     }
 
@@ -60,7 +60,7 @@ public class Result {
         return isSuccess;
     }
 
-    public void setSuccess(boolean success) {
+    void setSuccess(boolean success) {
         isSuccess = success;
     }
 
@@ -68,7 +68,7 @@ public class Result {
         return totalEntries;
     }
 
-    public void setTotalEntries(int totalEntries) {
+    void setTotalEntries(int totalEntries) {
         this.totalEntries = totalEntries;
     }
 }

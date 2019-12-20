@@ -8,9 +8,7 @@ import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -35,7 +33,8 @@ public class ItemsSeeker {
     private int itemsLimit = 0;
     private long timeout = 8000;
 
-    private List<Result> results = new ArrayList<>();
+    private List<Result> results = new ArrayList<>(); //Here stored all found results without duplicates
+    private HashMap<String, Item> allItems = new HashMap<>(); //Here stored all found items and their IDs without duplicates
 
     public ItemsSeeker(List<String> queries, String appname, Condition condition, ResultsLoadingListener resultsLoadingListener) {
         unprocessed.addAll(queries.stream().distinct().collect(Collectors.toList()));
@@ -73,7 +72,7 @@ public class ItemsSeeker {
     private void initCallback() {
         callback = new Callback() {
             @Override
-            public synchronized void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            public synchronized void onResponse(@NotNull Call call, @NotNull Response response) {
                 threads--;
                 Result result = extractResult(response);
                 results.add(result);
@@ -126,15 +125,20 @@ public class ItemsSeeker {
                     .get("item").getAsJsonArray();
             for (JsonElement jsonItem : jsonItems) {
                 String itemId = jsonItem.getAsJsonObject().get("itemId").getAsString();
-                double price = jsonItem.getAsJsonObject()
-                        .get("sellingStatus").getAsJsonArray()
-                        .get(0).getAsJsonObject()
-                        .get("currentPrice").getAsJsonArray()
-                        .get(0).getAsJsonObject()
-                        .get("__value__").getAsDouble();
-                result.addItem(new Item(itemId, price));
+                //Checking if item already was found, it's need to have no duplicates
+                Item item = allItems.get(itemId);
+                if (item == null) {
+                    double price = jsonItem.getAsJsonObject()
+                            .get("sellingStatus").getAsJsonArray()
+                            .get(0).getAsJsonObject()
+                            .get("currentPrice").getAsJsonArray()
+                            .get(0).getAsJsonObject()
+                            .get("__value__").getAsDouble();
+                    item = new Item(itemId, price);
+                }
+                allItems.put(itemId, item);
+                result.addItem(item);
             }
-
 
             result.setSuccess(true);
         } catch (IOException | NullPointerException e) {
@@ -211,5 +215,21 @@ public class ItemsSeeker {
 
     public void setItemsLimit(int itemsLimit) {
         this.itemsLimit = itemsLimit;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
+
+    public List<Result> getResults() {
+        return results;
+    }
+
+    public HashMap<String, Item> getAllItems() {
+        return allItems;
     }
 }

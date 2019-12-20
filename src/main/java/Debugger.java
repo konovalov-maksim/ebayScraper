@@ -1,5 +1,6 @@
 import core.ItemsSeeker;
 import core.Logger;
+import core.Result;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,11 +39,13 @@ public class Debugger implements Logger, ItemsSeeker.ResultsLoadingListener {
 
     @Override
     public void onResult() {
-
+        log("Result received");
     }
 
     @Override
     public void onComplete() {
-
+        for (Result result : itemsSeeker.getResults()) {
+            log(result.getQuery() + ": " + result.getAvgPrice());
+        }
     }
 }
