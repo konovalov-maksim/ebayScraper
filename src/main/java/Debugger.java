@@ -8,15 +8,25 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
-public class Debug implements Logger {
+public class Debugger implements Logger {
 
-    private static ItemsSeeker itemsSeeker;
+    private static Debugger debugger;
+    private ItemsSeeker itemsSeeker;
 
     private static String[] testQueries = new String[]{"spinning reel shimano", "watches"};
 
     public static void main(String[] args) throws IOException {
+        debugger = new Debugger();
+        debugger.run();
+    }
+
+    private void run() throws IOException {
         String key = Files.readAllLines(Paths.get("key.txt")).get(0);
-        itemsSeeker = new ItemsSeeker(Arrays.asList(testQueries), ItemsSeeker.Condition.NOT_SPEC, key);
+        itemsSeeker = new ItemsSeeker(Arrays.asList(testQueries), key, ItemsSeeker.Condition.ALL);
+        itemsSeeker.setLogger(this);
+        itemsSeeker.setMaxThreads(4);
+        itemsSeeker.setItemsLimit(10);
+        itemsSeeker.start();
     }
 
 

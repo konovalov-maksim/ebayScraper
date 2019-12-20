@@ -29,7 +29,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>Debug</mainClass>
+                            <mainClass>Debugger</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
