@@ -10,10 +10,11 @@ public class ItemsSeeker {
     private int maxThreads = 3;
     private int itemsLimit = 60;
 
+    private Logger logger;
 
     private Deque<String> unprocessed = new ConcurrentLinkedDeque<>();
 
-    private List<Item> items;
+    private List<Result> results;
     private long itemsCnt;
     private long soldItemsCnt;
     private double avgPrice;
@@ -28,7 +29,9 @@ public class ItemsSeeker {
 
 
 
-
+    private void log(String message) {
+        if (logger != null) logger.log(message);
+    }
 
     public enum Condition {
         NEW, USED, NOT_SPEC
