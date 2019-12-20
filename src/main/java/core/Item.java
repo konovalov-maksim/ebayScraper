@@ -2,12 +2,12 @@ package core;
 
 public class Item {
 
-    public Item(Long itemId, double price) {
+    public Item(String itemId, double price) {
         ItemId = itemId;
         this.price = price;
     }
 
-    private Long ItemId;
+    private String ItemId;
 
     private boolean isInfoFull;
 
@@ -19,7 +19,7 @@ public class Item {
         return price;
     }
 
-    public Long getItemId() {
+    public String getItemId() {
         return ItemId;
     }
 
@@ -35,7 +35,7 @@ public class Item {
         isInfoFull = infoFull;
     }
 
-    public void setItemId(Long itemId) {
+    public void setItemId(String itemId) {
         ItemId = itemId;
     }
 

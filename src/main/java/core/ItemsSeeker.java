@@ -1,5 +1,9 @@
 package core;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,11 +15,14 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class ItemsSeeker implements Callback {
+public class ItemsSeeker {
 
     private Logger logger;
     private OkHttpClient client;
+    private Callback callback;
     private HttpUrl preparedUrl;
+    private ResultsLoadingListener resultsLoadingListener;
+
     private final String BASE_URL = "https://svcs.ebay.com/services/search/FindingService/v1";
     private boolean isRunning = false;
     private int threads;
@@ -30,20 +37,27 @@ public class ItemsSeeker implements Callback {
 
     private List<Result> results = new ArrayList<>();
 
-    public ItemsSeeker(List<String> queries, String appname, Condition condition) {
+    public ItemsSeeker(List<String> queries, String appname, Condition condition, ResultsLoadingListener resultsLoadingListener) {
         unprocessed.addAll(queries.stream().distinct().collect(Collectors.toList()));
         this.APP_NAME = appname;
         this.condition = condition;
+        this.resultsLoadingListener = resultsLoadingListener;
         client = new OkHttpClient.Builder().callTimeout(timeout, TimeUnit.MILLISECONDS).build();
+        initCallback();
     }
 
     public void start() {
         isRunning = true;
         prepareUrl();
-        callNewRequests();
+        sendNewRequests();
     }
 
-    private void callNewRequests() {
+    public void stop() {
+        isRunning = false;
+        resultsLoadingListener.onComplete();
+    }
+
+    private void sendNewRequests() {
         while (isRunning && threads < maxThreads && !unprocessed.isEmpty()) {
             HttpUrl urlWithKeywords = preparedUrl.newBuilder()
                     .addQueryParameter("keywords", unprocessed.pop())
@@ -51,24 +65,85 @@ public class ItemsSeeker implements Callback {
             Request request = new Request.Builder()
                     .url(urlWithKeywords)
                     .build();
-            client.newCall(request).enqueue(this);
+            threads++;
+            client.newCall(request).enqueue(callback);
         }
     }
 
-    @Override
-    public synchronized void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-        threads--;
-        Result result = extractResult(response);
+    private void initCallback() {
+        callback = new Callback() {
+            @Override
+            public synchronized void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                threads--;
+                Result result = extractResult(response);
+                results.add(result);
+                checkIsComplete();
+            }
 
-        results.add(result);
-//        log(response.body().string());
+            @Override
+            public synchronized void onFailure(@NotNull Call call, @NotNull IOException e) {
+                threads--;
+                Result result = new Result(call.request().header("keywords"));
+                result.setSuccess(false);
+                checkIsComplete();
+            }
+        };
     }
 
-    @Override
-    public synchronized void onFailure(@NotNull Call call, @NotNull IOException e) {
-        threads--;
-        Result result = new Result(call.request().header("keywords"));
-        result.setSuccess(false);
+    private void checkIsComplete() {
+        if (threads == 0 && unprocessed.isEmpty()) resultsLoadingListener.onComplete();
+    }
+
+    //Extracting Result object from JSON response body
+    private Result extractResult(Response response) {
+        String query = response.request().url().queryParameter("keywords");
+        Result result = new Result(query);
+        try {
+            String jsonData = response.body().string();
+            JsonObject root = new Gson().fromJson(jsonData, JsonObject.class);
+            //Status
+            boolean isSuccess = root.getAsJsonArray("findItemsByKeywordsResponse")
+                    .get(0).getAsJsonObject()
+                    .get("ack").getAsString()
+                    .equals("Success");
+            if (!isSuccess) {
+                log("Query: " + query + " - incorrect request");
+                return result;
+            }
+            //Total entries
+            int totalEntries = root.getAsJsonArray("findItemsByKeywordsResponse")
+                    .get(0).getAsJsonObject()
+                    .get("paginationOutput").getAsJsonArray()
+                    .get(0).getAsJsonObject()
+                    .get("totalEntries").getAsJsonArray()
+                    .get(0).getAsInt();
+            result.setTotalEntries(totalEntries);
+            //Items
+            JsonArray jsonItems = root.getAsJsonArray("findItemsByKeywordsResponse")
+                    .get(0).getAsJsonObject()
+                    .get("searchResult").getAsJsonArray()
+                    .get(0).getAsJsonObject()
+                    .get("item").getAsJsonArray();
+            for (JsonElement jsonItem : jsonItems) {
+                String itemId = jsonItem.getAsJsonObject().get("itemId").getAsString();
+                double price = jsonItem.getAsJsonObject()
+                        .get("sellingStatus").getAsJsonArray()
+                        .get(0).getAsJsonObject()
+                        .get("currentPrice").getAsJsonArray()
+                        .get(0).getAsJsonObject()
+                        .get("__value__").getAsDouble();
+                result.addItem(new Item(itemId, price));
+            }
+
+
+            result.setSuccess(true);
+        } catch (IOException | NullPointerException e) {
+            log("Query: " + query + " - unable to get response body");
+        } catch (Exception e) {
+            log("Query: " + query + " - unable to process result");
+            e.printStackTrace();
+        }
+        return result;
     }
 
     //Preparing URL with get parameters
@@ -84,7 +159,6 @@ public class ItemsSeeker implements Callback {
                 .addQueryParameter("SECURITY-APPNAME", APP_NAME)
                 .addQueryParameter("RESPONSE-DATA-FORMAT", "JSON")
                 .addQueryParameter("paginationInput.entriesPerPage", String.valueOf(itemsLimit))
-//                .addQueryParameter("paginationInput.pageNumber", "1")
                 ;
 
         //Condition items filter. Docs - https://developer.ebay.com/DevZone/finding/CallRef/types/ItemFilterType.html
@@ -106,12 +180,6 @@ public class ItemsSeeker implements Callback {
        preparedUrl = urlBuilder.build();
     }
 
-    private Result extractResult(Response response) {
-        Result result = new Result(response.request().header("keywords"));
-        result.setSuccess(true);
-        return result;
-    }
-
     private void log(String message) {
         if (logger != null) logger.log(message);
     }
@@ -122,6 +190,11 @@ public class ItemsSeeker implements Callback {
 
     public enum Condition {
         NEW, USED, ALL
+    }
+
+    public interface ResultsLoadingListener {
+        void onResult();
+        void onComplete();
     }
 
     public int getMaxThreads() {

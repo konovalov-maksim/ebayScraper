@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
-public class Debugger implements Logger {
+public class Debugger implements Logger, ItemsSeeker.ResultsLoadingListener {
 
     private static Debugger debugger;
     private ItemsSeeker itemsSeeker;
@@ -22,7 +22,7 @@ public class Debugger implements Logger {
 
     private void run() throws IOException {
         String key = Files.readAllLines(Paths.get("key.txt")).get(0);
-        itemsSeeker = new ItemsSeeker(Arrays.asList(testQueries), key, ItemsSeeker.Condition.ALL);
+        itemsSeeker = new ItemsSeeker(Arrays.asList(testQueries), key, ItemsSeeker.Condition.ALL, this);
         itemsSeeker.setLogger(this);
         itemsSeeker.setMaxThreads(4);
         itemsSeeker.setItemsLimit(10);
@@ -34,5 +34,15 @@ public class Debugger implements Logger {
     public void log(String message) {
         String curTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
         System.out.println(curTime + ": " + message);
+    }
+
+    @Override
+    public void onResult() {
+
+    }
+
+    @Override
+    public void onComplete() {
+
     }
 }

@@ -9,9 +9,11 @@ public class Result {
     private String query;
     private List<Item> items = new ArrayList<>();
     private boolean isSuccess;
+    private int totalEntries;
 
     public Result(String query) {
         this.query = query;
+        isSuccess = false;
     }
 
     public int getItemsCount() {
@@ -60,5 +62,13 @@ public class Result {
 
     public void setSuccess(boolean success) {
         isSuccess = success;
+    }
+
+    public int getTotalEntries() {
+        return totalEntries;
+    }
+
+    public void setTotalEntries(int totalEntries) {
+        this.totalEntries = totalEntries;
     }
 }
