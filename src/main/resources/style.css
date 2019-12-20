@@ -1,0 +1,37 @@
+VBox, HBox {
+    -fx-spacing: 10;
+}
+
+.padding-pane {
+    -fx-padding: 10;
+}
+
+.split-pane {
+    -fx-background-insets: 0, 0;
+}
+
+.split-pane-divider {
+   -fx-border-color: transparent;
+   -fx-background-color: transparent;
+}
+
+.table-row-cell {
+    -fx-cell-size: 20;
+    -fx-font-size: 0.9em;
+}
+
+.spaced-grid-pane Label{ {
+    -fx-alignment: center-right;
+    -fx-max-width: Infinity;
+    -fx-padding: 10;
+}
+
+.progress-bar {
+    -fx-min-height: 20;
+    -fx-max-width: Infinity;
+}
+
+.console {
+    -fx-font-family: Consolas;
+    -fx-text-fill: #555555;
+}
