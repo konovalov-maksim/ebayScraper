@@ -110,7 +110,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
             showAlert("Error", "Incorrect items limit!");
             return;
         }
-        log("Items searching started");
+        log("--- Items searching started ---");
         stopBtn.setDisable(false);
         searchingBtn.setDisable(true);
         itemsSeeker.start();
@@ -120,13 +120,14 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     public void startDetailedExtraction() {
         itemsLoader = new ItemsLoader(itemsSeeker.getAllItems(), appName, this);
         itemsLoader.setLogger(this);
+        log("--- Detailed information extraction started ---");
         itemsLoader.start();
     }
 
     @FXML
     public void stop() {
-        if (itemsLoader.isRunning()) itemsLoader.stop();
-        if (itemsSeeker.isRunning()) itemsSeeker.stop();
+        if (itemsSeeker != null && itemsSeeker.isRunning()) itemsSeeker.stop();
+        if (itemsLoader != null && itemsLoader.isRunning()) itemsLoader.stop();
     }
 
     @Override
@@ -136,7 +137,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
     @Override
     public void onAllItemsReceived() {
-        log("Detailed information extraction is completed");
+        log("--- Detailed information extraction is completed ---");
         searchingBtn.setDisable(false);
         extractionBtn.setDisable(false);
         stopBtn.setDisable(true);
@@ -151,7 +152,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
     @Override
     public void onAllResultsReceived() {
-        log("Items searching completed");
+        log("--- Items searching completed ---");
         stopBtn.setDisable(true);
         searchingBtn.setDisable(false);
         extractionBtn.setDisable(false);

@@ -43,6 +43,7 @@ public class ItemsLoader {
     }
 
     public void start() {
+        threads = 0;
         client = new OkHttpClient.Builder().callTimeout(timeout, TimeUnit.MILLISECONDS).build();
         prepareUrl();
         isRunning = true;
@@ -51,7 +52,7 @@ public class ItemsLoader {
 
     public void stop() {
         isRunning = false;
-        itemsLoadingListener.onAllItemsReceived();
+        onFinish();
     }
 
     private void sendNewRequests() {
@@ -71,6 +72,7 @@ public class ItemsLoader {
         callback = new Callback() {
             @Override
             public synchronized void onResponse(@NotNull Call call, @NotNull Response response) {
+                if (!isRunning) return;
                 threads--;
                 extractDataIntoItems(response);
                 checkIsComplete();
@@ -80,6 +82,7 @@ public class ItemsLoader {
 
             @Override
             public synchronized void onFailure(@NotNull Call call, @NotNull IOException e) {
+                if (!isRunning) return;
                 threads--;
                 Result result = new Result(call.request().header("keywords"));
                 result.setIsSuccess(false);
@@ -91,7 +94,12 @@ public class ItemsLoader {
     }
 
     private void checkIsComplete() {
-        if (threads == 0 && unprocessed.isEmpty()) itemsLoadingListener.onAllItemsReceived();
+        if (threads == 0 && unprocessed.isEmpty())onFinish();
+    }
+
+    private void onFinish() {
+        client.connectionPool().evictAll();
+        itemsLoadingListener.onAllItemsReceived();
     }
 
     //Extracting data from JSON into items

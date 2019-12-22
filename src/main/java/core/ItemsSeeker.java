@@ -48,6 +48,7 @@ public class ItemsSeeker {
 
     public void start() {
         client = new OkHttpClient.Builder().callTimeout(timeout, TimeUnit.MILLISECONDS).build();
+        threads = 0;
         prepareUrl();
         isRunning = true;
         sendNewRequests();
@@ -55,7 +56,7 @@ public class ItemsSeeker {
 
     public void stop() {
         isRunning = false;
-        resultsLoadingListener.onAllResultsReceived();
+        onFinish();
     }
 
     private void sendNewRequests() {
@@ -73,7 +74,7 @@ public class ItemsSeeker {
                 maxOnPage = Math.min(itemsLimit - result.getItemsCount(), MAX_ITEMS_PER_PAGE);
             }
             if (page > MAX_PAGE_NUMBER) {
-                log(query + " - all items found for " + MAX_PAGE_NUMBER + " pages");
+                log(String.format("%-30s%s", query, " - all items found on " + MAX_PAGE_NUMBER + " pages"));
                 return;
             }
 
@@ -86,7 +87,6 @@ public class ItemsSeeker {
                     .url(urlWithKeywords)
                     .build();
             threads++;
-            log(query + " - page " + page + " loading");
             client.newCall(request).enqueue(callback);
         }
     }
@@ -95,11 +95,14 @@ public class ItemsSeeker {
         callback = new Callback() {
             @Override
             public synchronized void onResponse(@NotNull Call call, @NotNull Response response) {
+                if (!isRunning) return;
                 threads--;
                 //Adding results
                 Result newResult = extractResult(response);
                 Result oldResult = results.get(newResult.getQuery());
                 Result result;
+                log(String.format("%-30s%s", response.request().url().queryParameter("keywords"),
+                        " - page " + response.request().url().queryParameter("paginationInput.pageNumber") + " loaded"));
                 if (oldResult == null) {
                     results.put(newResult.getQuery(), newResult);
                     result = newResult;
@@ -112,9 +115,10 @@ public class ItemsSeeker {
                 if (result.getItemsCount() < result.getTotalEntries() && result.getItemsCount() < itemsLimit) {
                     unprocessed.add(result.getQuery());
                     result.setStatus(Result.Status.LOADING);
-                } else
+                } else {
                     result.setStatus(Result.Status.COMPLETED);
-
+                    log(String.format("%-30s%s", result.getQuery(), " - all items found: " + result.getItemsCount()));
+                }
 
                 checkIsComplete();
                 sendNewRequests();
@@ -123,11 +127,14 @@ public class ItemsSeeker {
 
             @Override
             public synchronized void onFailure(@NotNull Call call, @NotNull IOException e) {
+                if (!isRunning) return;
                 threads--;
                 String query = call.request().url().queryParameter("keywords");
                 Result result = new Result(query);
                 result.setStatus(Result.Status.ERROR);
                 results.putIfAbsent(result.getQuery(), result);
+                log(String.format("%-30s%s", result.getQuery(),
+                        " - page " + call.request().url().queryParameter("paginationInput.pageNumber") + ": loading error!"));
                 checkIsComplete();
                 sendNewRequests();
                 resultsLoadingListener.onResultReceived(query);
@@ -136,7 +143,12 @@ public class ItemsSeeker {
     }
 
     private void checkIsComplete() {
-        if (threads == 0 && unprocessed.isEmpty()) resultsLoadingListener.onAllResultsReceived();
+        if (threads == 0 && unprocessed.isEmpty()) onFinish();
+    }
+
+    private void onFinish() {
+        client.connectionPool().evictAll();
+        resultsLoadingListener.onAllResultsReceived();
     }
 
     //Extracting Result object from JSON response body
