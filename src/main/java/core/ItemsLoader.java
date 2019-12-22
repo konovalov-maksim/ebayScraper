@@ -30,8 +30,8 @@ public class ItemsLoader {
     private HashMap<String, Item> items; //all items, format <itemId, item>
 
     private final int ITEMS_PER_REQUEST = 20;
-    private int maxThreads = 3;
-    private long timeout = 8000;
+    private int maxThreads = 5;
+    private long timeout = 10000;
 
     public ItemsLoader(HashMap<String, Item> items, String APP_NAME, ItemsLoadingListener itemsLoadingListener) {
         this.APP_NAME = APP_NAME;
@@ -74,14 +74,18 @@ public class ItemsLoader {
                 threads--;
                 extractDataIntoItems(response);
                 checkIsComplete();
+                sendNewRequests();
+                itemsLoadingListener.onItemReceived();
             }
 
             @Override
             public synchronized void onFailure(@NotNull Call call, @NotNull IOException e) {
                 threads--;
                 Result result = new Result(call.request().header("keywords"));
-                result.setSuccess(false);
+                result.setIsSuccess(false);
                 checkIsComplete();
+                sendNewRequests();
+                itemsLoadingListener.onItemReceived();
             }
         };
     }
@@ -93,7 +97,7 @@ public class ItemsLoader {
     //Extracting data from JSON into items
     private void extractDataIntoItems(Response response) {
         try {
-            //Extracting status
+            //Extracting Status
             JsonObject root = new Gson().fromJson(response.body().string(), JsonObject.class);
             boolean isSuccess = root.get("Ack").getAsString().equals("Success");
             if (!isSuccess) {
@@ -178,5 +182,9 @@ public class ItemsLoader {
 
     public void setTimeout(long timeout) {
         this.timeout = timeout;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
     }
 }

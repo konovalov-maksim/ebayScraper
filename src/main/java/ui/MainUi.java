@@ -19,7 +19,7 @@ public class MainUi extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"), rb);
         Parent root = loader.load();
         root.getStylesheets().add("/style.css");
-        stage.setTitle("Proxy Checker");
+        stage.setTitle("Ebay Scraper");
         //stage.getIcons().add();
         stage.setScene(new Scene(root));
 

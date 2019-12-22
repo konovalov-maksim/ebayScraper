@@ -3,50 +3,158 @@ package ui;
 import core.ItemsLoader;
 import core.ItemsSeeker;
 import core.Logger;
+import core.Result;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainController implements Initializable, Logger, ItemsSeeker.ResultsLoadingListener, ItemsLoader.ItemsLoadingListener {
 
     @FXML private TextArea inputTa;
     @FXML private TextArea consoleTa;
+    @FXML private Button searchingBtn;
+    @FXML private Button extractionBtn;
+    @FXML private Button stopBtn;
+    @FXML private ComboBox<String> conditionCb;
+    @FXML private Spinner<Integer> maxThreadsSpn;
+    @FXML private TextField itemsLimitTf;
+
+
+    @FXML private TableView<Result> table;
+    @FXML private TableColumn<Result, String> queryCol;
+    @FXML private TableColumn<Result, String> isSuccessCol;
+    @FXML private TableColumn<Result, String> itemsProgCol;
+    @FXML private TableColumn<Result, Integer> totalEntriesCol;
+    @FXML private TableColumn<Result, Integer> itemsCountCol;
+    @FXML private TableColumn<Result, Double> avgPriceCol;
+    @FXML private TableColumn<Result, Integer> soldCountCol;
+    @FXML private TableColumn<Result, Double> avgPurchasePriceCol;
+
+    private ObservableList<Result> results = FXCollections.observableArrayList();
+
+
+    private ItemsSeeker itemsSeeker;
+    private ItemsLoader itemsLoader;
+    private String appName;
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        try {
+            appName = Files.readAllLines(Paths.get("key.txt")).get(0);
+        } catch (IOException e) {
+            log("Unable to read app name");
+        }
 
+        queryCol.setCellValueFactory(new PropertyValueFactory<>("query"));
+        isSuccessCol.setCellValueFactory(new PropertyValueFactory<>("statusString"));
+        itemsProgCol.setCellValueFactory(new PropertyValueFactory<>("progressString"));
+        totalEntriesCol.setCellValueFactory(new PropertyValueFactory<>("totalEntries"));
+        itemsCountCol.setCellValueFactory(new PropertyValueFactory<>("itemsCount"));
+        avgPriceCol.setCellValueFactory(new PropertyValueFactory<>("avgPrice"));
+        soldCountCol.setCellValueFactory(new PropertyValueFactory<>("soldCount"));
+        avgPurchasePriceCol.setCellValueFactory(new PropertyValueFactory<>("avgPurchasePrice"));
+
+        queryCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
+        isSuccessCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        itemsProgCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        totalEntriesCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        itemsCountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        avgPriceCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        soldCountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        avgPurchasePriceCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        table.setItems(results);
+        table.setTableMenuButtonVisible(true);
+
+
+        searchingBtn.setTooltip(new Tooltip("Start searching for items"));
+        extractionBtn.setTooltip(new Tooltip("Start detailed items information extraction"));
+        maxThreadsSpn.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 4));
+
+        conditionCb.setItems(FXCollections.observableArrayList("All", "New", "Used"));
+        conditionCb.setValue("All");
+
+        searchingBtn.setDisable(false);
+        extractionBtn.setDisable(true);
+        stopBtn.setDisable(true);
+        extractionBtn.setDisable(true);
     }
 
 
+    @FXML
+    public void startSearching() {
+        results.clear();
+        if (inputTa.getText() == null || inputTa.getText().isEmpty()) {
+            showAlert("Error", "Queries not specified");
+            return;
+        }
+        List<String> queries = Arrays.asList(inputTa.getText().split("\\r?\\n"));
+        itemsSeeker = new ItemsSeeker(queries, appName, getCondition(), this);
+        itemsSeeker.setLogger(this);
+        itemsSeeker.setMaxThreads(maxThreadsSpn.getValue());
+        try {
+            if (itemsLimitTf.getText() != null && itemsLimitTf.getText().length() > 0)
+                itemsSeeker.setItemsLimit(Integer.parseInt(itemsLimitTf.getText()));
+        } catch (NumberFormatException e) {
+            showAlert("Error", "Incorrect items limit!");
+            return;
+        }
+        log("Items searching started");
+        stopBtn.setDisable(false);
+        searchingBtn.setDisable(true);
+        itemsSeeker.start();
+    }
 
+    @FXML
+    public void startDetailedExtraction() {
+        itemsLoader = new ItemsLoader(itemsSeeker.getAllItems(), appName, this);
+        itemsLoader.setLogger(this);
+        itemsLoader.start();
+    }
 
-
+    @FXML
+    public void stop() {
+        if (itemsLoader.isRunning()) itemsLoader.stop();
+        if (itemsSeeker.isRunning()) itemsSeeker.stop();
+    }
 
     @Override
     public void onItemReceived() {
-
+        table.refresh();
     }
 
     @Override
     public void onAllItemsReceived() {
-
+        log("Detailed information extraction is completed");
+        searchingBtn.setDisable(false);
+        extractionBtn.setDisable(false);
+        stopBtn.setDisable(true);
     }
 
     @Override
     public void onResultReceived(String query) {
-
+        results.clear();
+        results.addAll(itemsSeeker.getResults());
+        table.refresh();
     }
 
     @Override
     public void onAllResultsReceived() {
-
+        log("Items searching completed");
+        stopBtn.setDisable(true);
+        searchingBtn.setDisable(false);
+        extractionBtn.setDisable(false);
     }
 
     @Override
@@ -58,5 +166,18 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         });
     }
 
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText(null);
+        alert.setGraphic(null);
+        alert.setTitle(title);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
+    private ItemsSeeker.Condition getCondition(){
+        if (conditionCb.getValue().equals("New")) return ItemsSeeker.Condition.NEW;
+        if (conditionCb.getValue().equals("Used")) return ItemsSeeker.Condition.USED;
+        return ItemsSeeker.Condition.ALL;
+    }
 }

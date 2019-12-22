@@ -1,11 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitPane?>
-
-<SplitPane prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1"
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<SplitPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1"
            xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.MainController" orientation="VERTICAL"
            dividerPositions="0.3, 0.85" styleClass="padding-pane">
-
+    <VBox>
+        <Label text="Input queries: "/>
+        <TextArea fx:id="inputTa"/>
+        <HBox>
+            <Label text="Condition:"/>
+            <ComboBox fx:id="conditionCb" prefWidth="100"/>
+            <Label text="Items limit:"/>
+            <TextField fx:id="itemsLimitTf" text="100" prefWidth="50"/>
+            <Label text="Max threads count:"/>
+            <Spinner fx:id="maxThreadsSpn" prefWidth="50"/>
+            <Button fx:id="searchingBtn" text="Start searching" onAction="#startSearching"/>
+            <Button fx:id="extractionBtn" text="Start extraction" onAction="#startDetailedExtraction"/>
+            <Button fx:id="stopBtn" text="Stop" onAction="#stop"/>
+        </HBox>
+    </VBox>
+    <TableView fx:id="table" >
+        <columns>
+            <TableColumn fx:id="queryCol" text="Query"/>
+            <TableColumn fx:id="isSuccessCol" text="Status"/>
+            <TableColumn fx:id="itemsProgCol" text="Items loading progress"/>
+            <TableColumn fx:id="totalEntriesCol" text="Total items"/>
+            <TableColumn fx:id="itemsCountCol" text="Items found"/>
+            <TableColumn fx:id="soldCountCol" text="Sold quantity"/>
+            <TableColumn fx:id="avgPriceCol" text="AVG price, $"/>
+            <TableColumn fx:id="avgPurchasePriceCol" text="AVG purchase price, $"/>
+        </columns>
+    </TableView>
+    <TextArea fx:id="consoleTa" editable="false" styleClass="console"/>
 </SplitPane>
 

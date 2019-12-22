@@ -29,11 +29,13 @@ public class ItemsSeeker {
     private final String APP_NAME;
     private final Condition condition;
 
-    private int maxThreads = 3;
-    private int itemsLimit = 0;
-    private long timeout = 8000;
+    private final int MAX_ITEMS_PER_PAGE = 100; //limit from docs: https://developer.ebay.com/DevZone/finding/CallRef/findItemsByKeywords.html#Request.paginationInput
+    private final int MAX_PAGE_NUMBER = 100; //limit from docs
+    private int itemsLimit = MAX_ITEMS_PER_PAGE * MAX_PAGE_NUMBER; //default items limit: 10 000
+    private int maxThreads = 5;
+    private long timeout = 10000;
 
-    private List<Result> results = new ArrayList<>(); //Here stored all found results without duplicates
+    private LinkedHashMap<String, Result> results = new LinkedHashMap<>(); //Here stored all found results without duplicates
     private HashMap<String, Item> allItems = new HashMap<>(); //Here stored all found items and their IDs without duplicates
 
     public ItemsSeeker(List<String> queries, String appname, Condition condition, ResultsLoadingListener resultsLoadingListener) {
@@ -58,13 +60,33 @@ public class ItemsSeeker {
 
     private void sendNewRequests() {
         while (isRunning && threads < maxThreads && !unprocessed.isEmpty()) {
+            String query = unprocessed.pop();
+            int page;
+            int maxOnPage;
+            Result result = results.get(query);
+            if (result == null) {
+                page = 1;
+                maxOnPage = MAX_ITEMS_PER_PAGE;
+            }
+            else {
+                page = result.getItemsCount() / MAX_ITEMS_PER_PAGE + 1;
+                maxOnPage = Math.min(itemsLimit - result.getItemsCount(), MAX_ITEMS_PER_PAGE);
+            }
+            if (page > MAX_PAGE_NUMBER) {
+                log(query + " - all items found for " + MAX_PAGE_NUMBER + " pages");
+                return;
+            }
+
             HttpUrl urlWithKeywords = preparedUrl.newBuilder()
-                    .addQueryParameter("keywords", unprocessed.pop())
+                    .addQueryParameter("keywords", query)
+                    .addQueryParameter("paginationInput.pageNumber", String.valueOf(page))
+                    .addQueryParameter("paginationInput.entriesPerPage", String.valueOf(maxOnPage))
                     .build();
             Request request = new Request.Builder()
                     .url(urlWithKeywords)
                     .build();
             threads++;
+            log(query + " - page " + page + " loading");
             client.newCall(request).enqueue(callback);
         }
     }
@@ -74,10 +96,29 @@ public class ItemsSeeker {
             @Override
             public synchronized void onResponse(@NotNull Call call, @NotNull Response response) {
                 threads--;
-                Result result = extractResult(response);
-                results.add(result);
+                //Adding results
+                Result newResult = extractResult(response);
+                Result oldResult = results.get(newResult.getQuery());
+                Result result;
+                if (oldResult == null) {
+                    results.put(newResult.getQuery(), newResult);
+                    result = newResult;
+                }
+                else {
+                    oldResult.getItems().addAll(newResult.getItems());
+                    result = oldResult;
+                }
+                //Adding to queue again if needed to load remaining pagination pages
+                if (result.getItemsCount() < result.getTotalEntries() && result.getItemsCount() < itemsLimit) {
+                    unprocessed.add(result.getQuery());
+                    result.setStatus(Result.Status.LOADING);
+                } else
+                    result.setStatus(Result.Status.COMPLETED);
+
+
                 checkIsComplete();
-                resultsLoadingListener.onResultReceived(result.getQuery());
+                sendNewRequests();
+                resultsLoadingListener.onResultReceived(newResult.getQuery());
             }
 
             @Override
@@ -85,8 +126,10 @@ public class ItemsSeeker {
                 threads--;
                 String query = call.request().url().queryParameter("keywords");
                 Result result = new Result(query);
-                result.setSuccess(false);
+                result.setStatus(Result.Status.ERROR);
+                results.putIfAbsent(result.getQuery(), result);
                 checkIsComplete();
+                sendNewRequests();
                 resultsLoadingListener.onResultReceived(query);
             }
         };
@@ -109,7 +152,15 @@ public class ItemsSeeker {
                     .get("ack").getAsString()
                     .equals("Success");
             if (!isSuccess) {
-                log("Query: " + query + " - incorrect request");
+                String errorMessage = root.getAsJsonArray("findItemsByKeywordsResponse")
+                        .get(0).getAsJsonObject()
+                        .get("errorMessage").getAsJsonArray()
+                        .get(0).getAsJsonObject()
+                        .get("error").getAsJsonArray()
+                        .get(0).getAsJsonObject()
+                        .get("message").getAsJsonArray()
+                        .get(0).getAsString();
+                log("Query: " + query + " - error: " + errorMessage);
                 return result;
             }
             //Total entries
@@ -143,7 +194,7 @@ public class ItemsSeeker {
                 result.addItem(item);
             }
 
-            result.setSuccess(true);
+            result.setIsSuccess(true);
         } catch (IOException | NullPointerException e) {
             log("Query: " + query + " - unable to get response body");
         } catch (Exception e) {
@@ -165,7 +216,7 @@ public class ItemsSeeker {
                 .addQueryParameter("SERVICE-VERSION", "1.0.0")
                 .addQueryParameter("SECURITY-APPNAME", APP_NAME)
                 .addQueryParameter("RESPONSE-DATA-FORMAT", "JSON")
-                .addQueryParameter("paginationInput.entriesPerPage", String.valueOf(itemsLimit))
+//                .addQueryParameter("paginationInput.entriesPerPage", String.valueOf(Math.max(itemsLimit, MAX_ITEMS_PER_PAGE)))
                 ;
 
         //Condition items filter. Docs - https://developer.ebay.com/DevZone/finding/CallRef/types/ItemFilterType.html
@@ -229,10 +280,14 @@ public class ItemsSeeker {
     }
 
     public List<Result> getResults() {
-        return results;
+        return new ArrayList<>(results.values());
     }
 
     public HashMap<String, Item> getAllItems() {
         return allItems;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
     }
 }
