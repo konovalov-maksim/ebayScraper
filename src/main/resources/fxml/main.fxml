@@ -12,9 +12,9 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextField?>
-<SplitPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1"
+<SplitPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1"
            xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.MainController" orientation="VERTICAL"
-           dividerPositions="0.3, 0.85" styleClass="padding-pane">
+           dividerPositions="0.3, 0.8" styleClass="padding-pane">
     <VBox>
         <Label text="Input queries: "/>
         <TextArea fx:id="inputTa"/>
