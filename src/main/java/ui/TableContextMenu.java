@@ -20,7 +20,7 @@ public class TableContextMenu extends ContextMenu {
             int startColIndex = Integer.MAX_VALUE;
             for (TablePosition pos : table.getSelectionModel().getSelectedCells())
                 if (pos.getColumn() < startColIndex) startColIndex = pos.getColumn();
-            //ѕеребираем все выделенные €чейки и записываем их в буфер
+
             for (TablePosition pos : table.getSelectionModel().getSelectedCells()) {
                 int rowIndex = pos.getRow();
                 int colIndex = pos.getColumn();
@@ -46,23 +46,7 @@ public class TableContextMenu extends ContextMenu {
         });
         copyItem.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN));
 
-        //Item "Copy selected col data"
-        MenuItem copyColItem = new MenuItem("Copy column data");
-        copyColItem.setOnAction(a -> {
-            int colIndex = table.getFocusModel().getFocusedCell().getColumn();
-            StringBuilder selectedData = new StringBuilder();
-            for (int i = 0; i < table.getItems().size(); i++) {
-                Object cellData = table.getColumns().get(colIndex).getCellData(i);
-                if (cellData != null && cellData.toString().length() > 0) selectedData.append(cellData.toString()).append("\n");
-            }
-            ClipboardContent clipboardContent = new ClipboardContent();
-            clipboardContent.putString(selectedData.toString());
-            Clipboard.getSystemClipboard().setContent(clipboardContent);
-        });
-        copyColItem.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN));
-
-
-        this.getItems().addAll(copyItem, copyColItem);
+        this.getItems().addAll(copyItem);
 
         table.setRowFactory(c -> {
             TableRow<S> row = new TableRow<>();
@@ -76,8 +60,5 @@ public class TableContextMenu extends ContextMenu {
         return this.getItems().get(0);
     }
 
-    public MenuItem getCopyColItem() {
-        return this.getItems().get(1);
-    }
 
 }

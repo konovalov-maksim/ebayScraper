@@ -41,6 +41,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private TableColumn<Result, Double> avgPriceCol;
     @FXML private TableColumn<Result, Integer> soldCountCol;
     @FXML private TableColumn<Result, Double> avgPurchasePriceCol;
+    private TableContextMenu tableContextMenu;
 
     private ObservableList<Result> results = FXCollections.observableArrayList();
     private Set<String> resultsSet = new HashSet<>();
@@ -77,7 +78,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         soldCountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         avgPurchasePriceCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         table.setItems(results);
-
+        tableContextMenu = new TableContextMenu(table);
 
         searchingBtn.setTooltip(new Tooltip("Start searching for items"));
         extractionBtn.setTooltip(new Tooltip("Start detailed items information extraction"));
