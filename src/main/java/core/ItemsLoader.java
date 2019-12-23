@@ -98,6 +98,7 @@ public class ItemsLoader {
     }
 
     private void onFinish() {
+        isRunning = false;
         client.connectionPool().evictAll();
         itemsLoadingListener.onAllItemsReceived();
     }

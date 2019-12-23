@@ -20,12 +20,6 @@ VBox, HBox {
     -fx-font-size: 0.9em;
 }
 
-.spaced-grid-pane Label{ {
-    -fx-alignment: center-right;
-    -fx-max-width: Infinity;
-    -fx-padding: 10;
-}
-
 .progress-bar {
     -fx-min-height: 20;
     -fx-max-width: Infinity;
@@ -34,4 +28,8 @@ VBox, HBox {
 .console {
     -fx-font-family: Consolas;
     -fx-text-fill: #555555;
+}
+
+.number-column {
+    -fx-alignment: CENTER-RIGHT;
 }

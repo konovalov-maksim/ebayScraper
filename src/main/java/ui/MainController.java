@@ -42,6 +42,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private TableColumn<Result, Double> avgPurchasePriceCol;
 
     private ObservableList<Result> results = FXCollections.observableArrayList();
+    private Set<String> resultsSet = new HashSet<>();
 
 
     private ItemsSeeker itemsSeeker;
@@ -75,7 +76,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         soldCountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         avgPurchasePriceCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         table.setItems(results);
-        table.setTableMenuButtonVisible(true);
 
 
         searchingBtn.setTooltip(new Tooltip("Start searching for items"));
@@ -95,6 +95,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML
     public void startSearching() {
         results.clear();
+        resultsSet.clear();
         if (inputTa.getText() == null || inputTa.getText().isEmpty()) {
             showAlert("Error", "Queries not specified");
             return;
@@ -120,6 +121,9 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     public void startDetailedExtraction() {
         itemsLoader = new ItemsLoader(itemsSeeker.getAllItems(), appName, this);
         itemsLoader.setLogger(this);
+        searchingBtn.setDisable(true);
+        extractionBtn.setDisable(true);
+        stopBtn.setDisable(false);
         log("--- Detailed information extraction started ---");
         itemsLoader.start();
     }
@@ -144,9 +148,11 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     }
 
     @Override
-    public void onResultReceived(String query) {
-        results.clear();
-        results.addAll(itemsSeeker.getResults());
+    public void onResultReceived(Result result) {
+        if (!resultsSet.contains(result.getQuery())) {
+            resultsSet.add(result.getQuery());
+            results.add(result);
+        }
         table.refresh();
     }
 

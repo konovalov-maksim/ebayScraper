@@ -25,8 +25,8 @@
             <TextField fx:id="itemsLimitTf" text="100" prefWidth="50"/>
             <Label text="Max threads count:"/>
             <Spinner fx:id="maxThreadsSpn" prefWidth="50"/>
-            <Button fx:id="searchingBtn" text="Start searching" onAction="#startSearching"/>
-            <Button fx:id="extractionBtn" text="Start extraction" onAction="#startDetailedExtraction"/>
+            <Button fx:id="searchingBtn" text="Search" onAction="#startSearching"/>
+            <Button fx:id="extractionBtn" text="Load info" onAction="#startDetailedExtraction"/>
             <Button fx:id="stopBtn" text="Stop" onAction="#stop"/>
         </HBox>
     </VBox>
@@ -35,11 +35,11 @@
             <TableColumn fx:id="queryCol" text="Query"/>
             <TableColumn fx:id="isSuccessCol" text="Status"/>
             <TableColumn fx:id="itemsProgCol" text="Items loading progress"/>
-            <TableColumn fx:id="totalEntriesCol" text="Total items"/>
-            <TableColumn fx:id="itemsCountCol" text="Items found"/>
-            <TableColumn fx:id="soldCountCol" text="Sold quantity"/>
-            <TableColumn fx:id="avgPriceCol" text="AVG price, $"/>
-            <TableColumn fx:id="avgPurchasePriceCol" text="AVG purchase price, $"/>
+            <TableColumn fx:id="totalEntriesCol" text="Total items" styleClass="number-column"/>
+            <TableColumn fx:id="itemsCountCol" text="Items found" styleClass="number-column"/>
+            <TableColumn fx:id="soldCountCol" text="Sold quantity" styleClass="number-column"/>
+            <TableColumn fx:id="avgPriceCol" text="AVG price, $" styleClass="number-column"/>
+            <TableColumn fx:id="avgPurchasePriceCol" text="AVG purchase price, $" styleClass="number-column"/>
         </columns>
     </TableView>
     <TextArea fx:id="consoleTa" editable="false" styleClass="console"/>

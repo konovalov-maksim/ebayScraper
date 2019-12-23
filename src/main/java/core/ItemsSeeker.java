@@ -67,9 +67,8 @@ public class ItemsSeeker {
             Result result = results.get(query);
             if (result == null) {
                 page = 1;
-                maxOnPage = MAX_ITEMS_PER_PAGE;
-            }
-            else {
+                maxOnPage = Math.min(itemsLimit, MAX_ITEMS_PER_PAGE);
+            } else {
                 page = result.getItemsCount() / MAX_ITEMS_PER_PAGE + 1;
                 maxOnPage = Math.min(itemsLimit - result.getItemsCount(), MAX_ITEMS_PER_PAGE);
             }
@@ -122,7 +121,7 @@ public class ItemsSeeker {
 
                 checkIsComplete();
                 sendNewRequests();
-                resultsLoadingListener.onResultReceived(newResult.getQuery());
+                resultsLoadingListener.onResultReceived(result);
             }
 
             @Override
@@ -137,7 +136,7 @@ public class ItemsSeeker {
                         " - page " + call.request().url().queryParameter("paginationInput.pageNumber") + ": loading error!"));
                 checkIsComplete();
                 sendNewRequests();
-                resultsLoadingListener.onResultReceived(query);
+                resultsLoadingListener.onResultReceived(result);
             }
         };
     }
@@ -147,6 +146,7 @@ public class ItemsSeeker {
     }
 
     private void onFinish() {
+        isRunning = false;
         client.connectionPool().evictAll();
         resultsLoadingListener.onAllResultsReceived();
     }
@@ -263,7 +263,7 @@ public class ItemsSeeker {
     }
 
     public interface ResultsLoadingListener {
-        void onResultReceived(String query);
+        void onResultReceived(Result result);
         void onAllResultsReceived();
     }
 

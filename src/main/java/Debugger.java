@@ -45,8 +45,8 @@ public class Debugger implements Logger, ItemsSeeker.ResultsLoadingListener, Ite
     }
 
     @Override
-    public void onResultReceived(String query) {
-        log(query + ": result received");
+    public void onResultReceived(Result result) {
+        log(result.getQuery() + ": result received");
     }
 
     @Override
