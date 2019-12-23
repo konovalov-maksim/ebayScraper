@@ -110,7 +110,10 @@ public class ItemsLoader {
             JsonObject root = new Gson().fromJson(response.body().string(), JsonObject.class);
             boolean isSuccess = root.get("Ack").getAsString().equals("Success");
             if (!isSuccess) {
-                log("Unable to extract items data: incorrect request");
+                String errorMessage = root.get("Errors").getAsJsonArray()
+                        .get(0).getAsJsonObject()
+                        .get("LongMessage").getAsString();
+                log("Unable to extract items data: " + errorMessage);
                 return;
             }
             //Extracting items data
