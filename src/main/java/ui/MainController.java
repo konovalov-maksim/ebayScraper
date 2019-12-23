@@ -26,6 +26,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private Button searchingBtn;
     @FXML private Button extractionBtn;
     @FXML private Button stopBtn;
+    @FXML private Button clearBtn;
     @FXML private ComboBox<String> conditionCb;
     @FXML private Spinner<Integer> maxThreadsSpn;
     @FXML private TextField itemsLimitTf;
@@ -80,6 +81,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
         searchingBtn.setTooltip(new Tooltip("Start searching for items"));
         extractionBtn.setTooltip(new Tooltip("Start detailed items information extraction"));
+        clearBtn.setTooltip(new Tooltip("Clear all results"));
         maxThreadsSpn.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 4));
 
         conditionCb.setItems(FXCollections.observableArrayList("All", "New", "Used"));
@@ -88,14 +90,13 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         searchingBtn.setDisable(false);
         extractionBtn.setDisable(true);
         stopBtn.setDisable(true);
-        extractionBtn.setDisable(true);
     }
 
 
     @FXML
-    public void startSearching() {
-        results.clear();
-        resultsSet.clear();
+    private void startSearching() {
+        clearAll();
+
         if (inputTa.getText() == null || inputTa.getText().isEmpty()) {
             showAlert("Error", "Queries not specified");
             return;
@@ -118,7 +119,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     }
 
     @FXML
-    public void startDetailedExtraction() {
+    private void startDetailedExtraction() {
         itemsLoader = new ItemsLoader(itemsSeeker.getAllItems(), appName, this);
         itemsLoader.setLogger(this);
         searchingBtn.setDisable(true);
@@ -129,9 +130,20 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     }
 
     @FXML
-    public void stop() {
+    private void stop() {
         if (itemsSeeker != null && itemsSeeker.isRunning()) itemsSeeker.stop();
         if (itemsLoader != null && itemsLoader.isRunning()) itemsLoader.stop();
+    }
+
+    @FXML
+    private void clearAll() {
+        stop();
+        resultsSet.clear();
+        results.clear();
+        table.refresh();
+        stopBtn.setDisable(true);
+        searchingBtn.setDisable(false);
+        extractionBtn.setDisable(true);
     }
 
     @Override
@@ -142,8 +154,8 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @Override
     public void onAllItemsReceived() {
         log("--- Detailed information extraction is completed ---");
-        searchingBtn.setDisable(false);
-        extractionBtn.setDisable(false);
+        searchingBtn.setDisable(true);
+        extractionBtn.setDisable(true);
         stopBtn.setDisable(true);
     }
 

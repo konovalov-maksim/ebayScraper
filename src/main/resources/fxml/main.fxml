@@ -28,6 +28,7 @@
             <Button fx:id="searchingBtn" text="Search" onAction="#startSearching"/>
             <Button fx:id="extractionBtn" text="Load info" onAction="#startDetailedExtraction"/>
             <Button fx:id="stopBtn" text="Stop" onAction="#stop"/>
+            <Button fx:id="clearBtn" text="Clear" onAction="#clearAll"/>
         </HBox>
     </VBox>
     <TableView fx:id="table" >
