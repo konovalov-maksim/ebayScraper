@@ -34,7 +34,7 @@ public class ItemsSeeker {
     private int itemsLimit = MAX_ITEMS_PER_PAGE * MAX_PAGE_NUMBER; //default items limit: 10 000
     private int maxThreads = 5;
     private long timeout = 10000;
-    private int categoryId = -1;
+    private String categoryId = null;
 
     private LinkedHashMap<String, Result> results = new LinkedHashMap<>(); //Here stored all found results without duplicates
     private HashMap<String, Item> allItems = new HashMap<>(); //Here stored all found items and their IDs without duplicates
@@ -253,7 +253,7 @@ public class ItemsSeeker {
                     .addQueryParameter("itemFilter(0).value(6)", "7000"); //For parts or not working
         }
         //Category filter
-        if (categoryId > 0) urlBuilder.addQueryParameter("categoryId", String.valueOf(categoryId));
+        if (categoryId != null && !categoryId.isEmpty()) urlBuilder.addQueryParameter("categoryId", categoryId);
        preparedUrl = urlBuilder.build();
     }
 
@@ -311,12 +311,11 @@ public class ItemsSeeker {
         return isRunning;
     }
 
-    public Integer getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(Integer categoryId) {
-        if (categoryId > 0) this.categoryId = categoryId;
-        else log("Incorrect category ID");
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
     }
 }

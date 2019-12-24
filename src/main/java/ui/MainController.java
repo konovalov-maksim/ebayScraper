@@ -116,13 +116,9 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
             return;
         }
         //Category
-        try {
-            if (categoryTf.getText() != null && categoryTf.getText().length() > 0)
-                itemsSeeker.setCategoryId(Integer.parseInt(categoryTf.getText()));
-        } catch (NumberFormatException e) {
-            showAlert("Error", "Incorrect category ID!");
-            return;
-        }
+        if (categoryTf.getText() != null && categoryTf.getText().length() > 0)
+            itemsSeeker.setCategoryId(categoryTf.getText());
+
         log("--- Items searching started ---");
         stopBtn.setDisable(false);
         searchingBtn.setDisable(true);
