@@ -186,11 +186,12 @@ public class ItemsSeeker {
                     .get(0).getAsInt();
             result.setTotalEntries(totalEntries);
             //Items
-            JsonArray jsonItems = root.getAsJsonArray("findItemsAdvancedResponse")
+            JsonObject searchResult = root.getAsJsonArray("findItemsAdvancedResponse")
                     .get(0).getAsJsonObject()
                     .get("searchResult").getAsJsonArray()
-                    .get(0).getAsJsonObject()
-                    .get("item").getAsJsonArray();
+                    .get(0).getAsJsonObject();
+            if (!searchResult.has("item")) return result; //No items found
+            JsonArray jsonItems = searchResult.get("item").getAsJsonArray();
             for (JsonElement jsonItem : jsonItems) {
                 String itemId = jsonItem.getAsJsonObject().get("itemId").getAsString();
                 //Checking if item already was found, it's need to have no duplicates
@@ -246,14 +247,15 @@ public class ItemsSeeker {
             urlBuilder.addQueryParameter("itemFilter(0).name", "Condition")
                     .addQueryParameter("itemFilter(0).value(0)", "2000") //Manufacturer refurbished
                     .addQueryParameter("itemFilter(0).value(1)", "2500") //Seller refurbished
-                    .addQueryParameter("itemFilter(0).value(2)", "3000") //Used
-                    .addQueryParameter("itemFilter(0).value(3)", "4000") //Very Good
-                    .addQueryParameter("itemFilter(0).value(4)", "5000") //Good
-                    .addQueryParameter("itemFilter(0).value(5)", "6000") //Acceptable
-                    .addQueryParameter("itemFilter(0).value(6)", "7000"); //For parts or not working
+                    .addQueryParameter("itemFilter(0).value(2)", "2750") //Like New
+                    .addQueryParameter("itemFilter(0).value(3)", "3000") //Used
+                    .addQueryParameter("itemFilter(0).value(4)", "4000") //Very Good
+                    .addQueryParameter("itemFilter(0).value(5)", "5000") //Good
+                    .addQueryParameter("itemFilter(0).value(6)", "6000") //Acceptable
+                    .addQueryParameter("itemFilter(0).value(7)", "7000"); //For parts or not working
         }
         //Category filter
-        if (categoryId != null && !categoryId.isEmpty()) urlBuilder.addQueryParameter("categoryId", categoryId);
+        if (categoryId != null) urlBuilder.addQueryParameter("categoryId", categoryId);
        preparedUrl = urlBuilder.build();
     }
 
@@ -316,6 +318,9 @@ public class ItemsSeeker {
     }
 
     public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
+        if (categoryId == null || categoryId.isEmpty() || categoryId.equals("-1"))
+            this.categoryId = null;
+        else
+            this.categoryId = categoryId;
     }
 }

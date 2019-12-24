@@ -33,3 +33,17 @@ VBox, HBox {
 .number-column {
     -fx-alignment: CENTER-RIGHT;
 }
+
+.control-pane Button {
+    -fx-background-size: 16 16;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: 6 50%;
+    -fx-padding: 6 6 6 28;
+    -fx-min-width: 85;
+    -fx-alignment: CENTER-LEFT;
+}
+
+#searchingBtn {-fx-background-image: url("/images/search.png")}
+#extractionBtn {-fx-background-image: url("/images/arrow_down.png")}
+#stopBtn {-fx-background-image: url("/images/stop.png")}
+#clearBtn {-fx-background-image: url("/images/delete.png")}
