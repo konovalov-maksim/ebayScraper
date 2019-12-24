@@ -1,7 +1,4 @@
-import core.ItemsLoader;
-import core.ItemsSeeker;
-import core.Logger;
-import core.Result;
+import core.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,7 +27,11 @@ public class Debugger implements Logger, ItemsSeeker.ResultsLoadingListener, Ite
         itemsSeeker.setLogger(this);
         itemsSeeker.setMaxThreads(4);
         itemsSeeker.setItemsLimit(10);
-        itemsSeeker.start();
+//        itemsSeeker.start();
+        Category.setAppName(appName);
+        Category category = Category.findById("20081");
+        for (String name : category.getChildren().keySet())
+            System.out.println(name);
     }
 
     private void runItemsLoading() {

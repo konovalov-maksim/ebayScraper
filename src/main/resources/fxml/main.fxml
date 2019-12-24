@@ -12,21 +12,33 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextField?>
-<SplitPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1"
+<?import javafx.scene.control.Separator?>
+<SplitPane prefHeight="700.0" prefWidth="1050.0" xmlns="http://javafx.com/javafx/11.0.1"
            xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.MainController" orientation="VERTICAL"
            dividerPositions="0.3, 0.8" styleClass="padding-pane">
     <VBox>
         <Label text="Input queries: "/>
         <TextArea fx:id="inputTa"/>
-        <HBox>
-            <Label text="Condition:"/>
-            <ComboBox fx:id="conditionCb" prefWidth="100"/>
+        <HBox alignment="CENTER_LEFT">
             <Label text="Items limit:"/>
             <TextField fx:id="itemsLimitTf" text="100" prefWidth="50"/>
+            <Separator orientation="VERTICAL"/>
             <Label text="Max threads count:"/>
             <Spinner fx:id="maxThreadsSpn" prefWidth="50"/>
+            <Separator orientation="VERTICAL"/>
+            <Label text="Condition:"/>
+            <ComboBox fx:id="conditionCb" prefWidth="60"/>
+            <Separator orientation="VERTICAL"/>
             <Label text="Category:"/>
-            <TextField fx:id="categoryTf"/>
+            <TextField fx:id="categoryNameTf" prefWidth="100" editable="false"/>
+            <TextField fx:id="categoryIdTf" prefWidth="50"/>
+            <Label text="Subcategory: "/>
+            <ComboBox fx:id="categoryCb" prefWidth="100"/>
+            <Button text="Select" onAction="#selectSubcategory"/>
+            <Button text="Back" onAction="#selectParentCategory"/>
+        </HBox>
+        <Separator/>
+        <HBox>
             <Button fx:id="searchingBtn" text="Search" onAction="#startSearching"/>
             <Button fx:id="extractionBtn" text="Load info" onAction="#startDetailedExtraction"/>
             <Button fx:id="stopBtn" text="Stop" onAction="#stop"/>

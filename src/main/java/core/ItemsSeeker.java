@@ -203,7 +203,7 @@ public class ItemsSeeker {
                             .get(0).getAsJsonObject()
                             .get("__value__").getAsDouble();
                     item = new Item(itemId, price);
-                    System.out.println(itemId);
+//                    System.out.println(itemId);
                 }
                 allItems.put(itemId, item);
                 result.addItem(item);

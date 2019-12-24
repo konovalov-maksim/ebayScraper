@@ -1,9 +1,6 @@
 package ui;
 
-import core.ItemsLoader;
-import core.ItemsSeeker;
-import core.Logger;
-import core.Result;
+import core.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,7 +27,10 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private ComboBox<String> conditionCb;
     @FXML private Spinner<Integer> maxThreadsSpn;
     @FXML private TextField itemsLimitTf;
-    @FXML private TextField categoryTf;
+    @FXML private TextField categoryNameTf;
+    @FXML private TextField categoryIdTf;
+    @FXML private ComboBox<String> categoryCb;
+
 
 
     @FXML private TableView<Result> table;
@@ -51,6 +51,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     private ItemsSeeker itemsSeeker;
     private ItemsLoader itemsLoader;
     private String appName;
+    private Category category;
 
 
     @Override
@@ -60,6 +61,8 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         } catch (IOException e) {
             log("Unable to read app name");
         }
+        Category.setAppName(appName);
+        selectCategory("-1");
 
         queryCol.setCellValueFactory(new PropertyValueFactory<>("query"));
         isSuccessCol.setCellValueFactory(new PropertyValueFactory<>("statusString"));
@@ -116,8 +119,8 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
             return;
         }
         //Category
-        if (categoryTf.getText() != null && categoryTf.getText().length() > 0)
-            itemsSeeker.setCategoryId(categoryTf.getText());
+        if (categoryIdTf.getText() != null && categoryIdTf.getText().length() > 0)
+            itemsSeeker.setCategoryId(categoryIdTf.getText());
 
         log("--- Items searching started ---");
         stopBtn.setDisable(false);
@@ -151,6 +154,30 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         stopBtn.setDisable(true);
         searchingBtn.setDisable(false);
         extractionBtn.setDisable(true);
+    }
+
+    @FXML
+    private void selectSubcategory() {
+        String categoryId = category.getChildren().get(categoryCb.getValue());
+        if (categoryId != null) selectCategory(categoryId);
+    }
+
+    @FXML
+    private void selectParentCategory() {
+        if (category.getParentId() != null && !category.getParentId().equals("0")) selectCategory(category.getParentId());
+    }
+
+    private void selectCategory(String categoryId) {
+        category = Category.findById(categoryId);
+        if (category == null) {
+            categoryIdTf.setText("-1");
+            return;
+        }
+        categoryIdTf.setText(categoryId);
+        categoryNameTf.setText(category.getName());
+        categoryCb.getItems().clear();
+        categoryCb.getItems().addAll(category.getChildren().keySet());
+        if (!categoryCb.getItems().isEmpty()) categoryCb.setValue(categoryCb.getItems().get(0));
     }
 
     @Override
