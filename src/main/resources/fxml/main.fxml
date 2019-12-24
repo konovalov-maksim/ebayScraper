@@ -34,8 +34,8 @@
             <TextField fx:id="categoryIdTf" prefWidth="50"/>
             <Label text="Subcategory: "/>
             <ComboBox fx:id="categoryCb" prefWidth="100"/>
-            <Button text="Select" onAction="#selectSubcategory"/>
-            <Button text="Back" onAction="#selectParentCategory"/>
+            <Button fx:id="subcategoryBtn" text="Select" onAction="#selectSubcategory"/>
+            <Button fx:id="parentCategoryBtn" text="Back" onAction="#selectParentCategory"/>
         </HBox>
         <Separator/>
         <HBox>
@@ -53,8 +53,8 @@
             <TableColumn fx:id="totalEntriesCol" text="Total items" styleClass="number-column"/>
             <TableColumn fx:id="itemsCountCol" text="Items found" styleClass="number-column"/>
             <TableColumn fx:id="soldCountCol" text="Sold quantity" styleClass="number-column"/>
-            <TableColumn fx:id="avgPriceCol" text="AVG price, $" styleClass="number-column"/>
-            <TableColumn fx:id="avgPurchasePriceCol" text="AVG purchase price, $" styleClass="number-column"/>
+            <TableColumn fx:id="avgPriceCol" text="AVG $ Listed" styleClass="number-column"/>
+            <TableColumn fx:id="avgPurchasePriceCol" text="AVG $ Sold" styleClass="number-column"/>
         </columns>
     </TableView>
     <TextArea fx:id="consoleTa" editable="false" styleClass="console"/>

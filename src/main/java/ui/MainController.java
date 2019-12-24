@@ -30,6 +30,8 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private TextField categoryNameTf;
     @FXML private TextField categoryIdTf;
     @FXML private ComboBox<String> categoryCb;
+    @FXML private Button subcategoryBtn;
+    @FXML private Button parentCategoryBtn;
 
 
 
@@ -87,6 +89,9 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         searchingBtn.setTooltip(new Tooltip("Start searching for items"));
         extractionBtn.setTooltip(new Tooltip("Start detailed items information extraction"));
         clearBtn.setTooltip(new Tooltip("Clear all results"));
+        parentCategoryBtn.setTooltip(new Tooltip("Select parent category"));
+        subcategoryBtn.setTooltip(new Tooltip("Select subcategory"));
+
         maxThreadsSpn.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 4));
 
         conditionCb.setItems(FXCollections.observableArrayList("All", "New", "Used"));
