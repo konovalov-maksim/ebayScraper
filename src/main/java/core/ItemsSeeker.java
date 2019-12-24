@@ -34,6 +34,7 @@ public class ItemsSeeker {
     private int itemsLimit = MAX_ITEMS_PER_PAGE * MAX_PAGE_NUMBER; //default items limit: 10 000
     private int maxThreads = 5;
     private long timeout = 10000;
+    private int categoryId = -1;
 
     private LinkedHashMap<String, Result> results = new LinkedHashMap<>(); //Here stored all found results without duplicates
     private HashMap<String, Item> allItems = new HashMap<>(); //Here stored all found items and their IDs without duplicates
@@ -85,6 +86,7 @@ public class ItemsSeeker {
             Request request = new Request.Builder()
                     .url(urlWithKeywords)
                     .build();
+            System.out.println(urlWithKeywords.url());
             threads++;
             client.newCall(request).enqueue(callback);
         }
@@ -159,12 +161,12 @@ public class ItemsSeeker {
             String jsonData = response.body().string();
             JsonObject root = new Gson().fromJson(jsonData, JsonObject.class);
             //Status
-            boolean isSuccess = root.getAsJsonArray("findItemsByKeywordsResponse")
+            boolean isSuccess = root.getAsJsonArray("findItemsAdvancedResponse")
                     .get(0).getAsJsonObject()
                     .get("ack").getAsString()
                     .equals("Success");
             if (!isSuccess) {
-                String errorMessage = root.getAsJsonArray("findItemsByKeywordsResponse")
+                String errorMessage = root.getAsJsonArray("findItemsAdvancedResponse")
                         .get(0).getAsJsonObject()
                         .get("errorMessage").getAsJsonArray()
                         .get(0).getAsJsonObject()
@@ -176,7 +178,7 @@ public class ItemsSeeker {
                 return result;
             }
             //Total entries
-            int totalEntries = root.getAsJsonArray("findItemsByKeywordsResponse")
+            int totalEntries = root.getAsJsonArray("findItemsAdvancedResponse")
                     .get(0).getAsJsonObject()
                     .get("paginationOutput").getAsJsonArray()
                     .get(0).getAsJsonObject()
@@ -184,7 +186,7 @@ public class ItemsSeeker {
                     .get(0).getAsInt();
             result.setTotalEntries(totalEntries);
             //Items
-            JsonArray jsonItems = root.getAsJsonArray("findItemsByKeywordsResponse")
+            JsonArray jsonItems = root.getAsJsonArray("findItemsAdvancedResponse")
                     .get(0).getAsJsonObject()
                     .get("searchResult").getAsJsonArray()
                     .get(0).getAsJsonObject()
@@ -201,6 +203,7 @@ public class ItemsSeeker {
                             .get(0).getAsJsonObject()
                             .get("__value__").getAsDouble();
                     item = new Item(itemId, price);
+                    System.out.println(itemId);
                 }
                 allItems.put(itemId, item);
                 result.addItem(item);
@@ -209,6 +212,7 @@ public class ItemsSeeker {
             result.setIsSuccess(true);
         } catch (IOException | NullPointerException e) {
             log("Query: " + query + " - unable to get response body");
+            e.printStackTrace();
         } catch (Exception e) {
             log("Query: " + query + " - unable to process result");
             e.printStackTrace();
@@ -224,11 +228,12 @@ public class ItemsSeeker {
             return;
         }
         HttpUrl.Builder urlBuilder = httpUrl.newBuilder()
-                .addQueryParameter("OPERATION-NAME", "findItemsByKeywords")
-                .addQueryParameter("SERVICE-VERSION", "1.0.0")
+//                .addQueryParameter("OPERATION-NAME", "findItemsByKeywords")
+                .addQueryParameter("OPERATION-NAME", "findItemsAdvanced")
+                .addQueryParameter("GLOBAL-ID", "EBAY-US")
+                .addQueryParameter("SERVICE-VERSION", "1.13.0")
                 .addQueryParameter("SECURITY-APPNAME", APP_NAME)
                 .addQueryParameter("RESPONSE-DATA-FORMAT", "JSON")
-//                .addQueryParameter("paginationInput.entriesPerPage", String.valueOf(Math.max(itemsLimit, MAX_ITEMS_PER_PAGE)))
                 ;
 
         //Condition items filter. Docs - https://developer.ebay.com/DevZone/finding/CallRef/types/ItemFilterType.html
@@ -247,6 +252,8 @@ public class ItemsSeeker {
                     .addQueryParameter("itemFilter(0).value(5)", "6000") //Acceptable
                     .addQueryParameter("itemFilter(0).value(6)", "7000"); //For parts or not working
         }
+        //Category filter
+        if (categoryId > 0) urlBuilder.addQueryParameter("categoryId", String.valueOf(categoryId));
        preparedUrl = urlBuilder.build();
     }
 
@@ -280,7 +287,8 @@ public class ItemsSeeker {
     }
 
     public void setItemsLimit(int itemsLimit) {
-        this.itemsLimit = itemsLimit;
+        if (itemsLimit > MAX_ITEMS_PER_PAGE * MAX_PAGE_NUMBER) this.itemsLimit = MAX_ITEMS_PER_PAGE * MAX_PAGE_NUMBER;
+        else this.itemsLimit = itemsLimit;
     }
 
     public long getTimeout() {
@@ -301,5 +309,14 @@ public class ItemsSeeker {
 
     public boolean isRunning() {
         return isRunning;
+    }
+
+    public Integer getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Integer categoryId) {
+        if (categoryId > 0) this.categoryId = categoryId;
+        else log("Incorrect category ID");
     }
 }

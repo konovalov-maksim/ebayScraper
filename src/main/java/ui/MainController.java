@@ -30,6 +30,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private ComboBox<String> conditionCb;
     @FXML private Spinner<Integer> maxThreadsSpn;
     @FXML private TextField itemsLimitTf;
+    @FXML private TextField categoryTf;
 
 
     @FXML private TableView<Result> table;
@@ -106,11 +107,20 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         itemsSeeker = new ItemsSeeker(queries, appName, getCondition(), this);
         itemsSeeker.setLogger(this);
         itemsSeeker.setMaxThreads(maxThreadsSpn.getValue());
+        //Items limit
         try {
             if (itemsLimitTf.getText() != null && itemsLimitTf.getText().length() > 0)
                 itemsSeeker.setItemsLimit(Integer.parseInt(itemsLimitTf.getText()));
         } catch (NumberFormatException e) {
             showAlert("Error", "Incorrect items limit!");
+            return;
+        }
+        //Category
+        try {
+            if (categoryTf.getText() != null && categoryTf.getText().length() > 0)
+                itemsSeeker.setCategoryId(Integer.parseInt(categoryTf.getText()));
+        } catch (NumberFormatException e) {
+            showAlert("Error", "Incorrect category ID!");
             return;
         }
         log("--- Items searching started ---");

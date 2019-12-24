@@ -25,6 +25,8 @@
             <TextField fx:id="itemsLimitTf" text="100" prefWidth="50"/>
             <Label text="Max threads count:"/>
             <Spinner fx:id="maxThreadsSpn" prefWidth="50"/>
+            <Label text="Category:"/>
+            <TextField fx:id="categoryTf"/>
             <Button fx:id="searchingBtn" text="Search" onAction="#startSearching"/>
             <Button fx:id="extractionBtn" text="Load info" onAction="#startDetailedExtraction"/>
             <Button fx:id="stopBtn" text="Stop" onAction="#stop"/>
