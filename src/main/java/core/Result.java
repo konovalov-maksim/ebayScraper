@@ -11,12 +11,12 @@ public class Result {
     private String query;
     private List<Item> items = new ArrayList<>();
     private boolean isSuccess;
-    private int totalEntries;
-    private int totalEntriesComplete;
+    private int totalActiveItems;
+    private int totalCompleteItems;
     private Status status;
 
 
-    public Result(String query) {
+    Result(String query) {
         this.query = query;
         this.status = Status.NEW;
         isSuccess = false;
@@ -93,12 +93,12 @@ public class Result {
         isSuccess = success;
     }
 
-    public int getTotalEntries() {
-        return totalEntries;
+    public int getTotalActiveItems() {
+        return totalActiveItems;
     }
 
-    void setTotalEntries(int totalEntries) {
-        this.totalEntries = totalEntries;
+    void setTotalActiveItems(int totalActiveItems) {
+        this.totalActiveItems = totalActiveItems;
     }
 
     public String getIsSuccessString() {
@@ -142,12 +142,12 @@ public class Result {
         }
     }
 
-    public int getTotalEntriesComplete() {
-        return totalEntriesComplete;
+    public int getTotalCompleteItems() {
+        return totalCompleteItems;
     }
 
-    public void setTotalEntriesComplete(int totalEntriesComplete) {
-        this.totalEntriesComplete = totalEntriesComplete;
+    public void setTotalCompleteItems(int totalCompleteItems) {
+        this.totalCompleteItems = totalCompleteItems;
     }
 }
 

@@ -108,7 +108,7 @@ public class ItemsSeeker {
                 Result newResult = extractResult(response);
                 Result oldResult = results.get(newResult.getQuery());
                 Result result;
-                log(String.format("%-30s%s", response.request().url().queryParameter("keywords"),
+                log(String.format("%-30s%s", "Query: " + response.request().url().queryParameter("keywords"),
                         " - page " + response.request().url().queryParameter("paginationInput.pageNumber") + " loaded"));
                 if (oldResult == null) {
                     results.put(newResult.getQuery(), newResult);
@@ -121,12 +121,13 @@ public class ItemsSeeker {
 
                 //Adding to queue again if needed to load remaining pagination pages
                 long itemsLoaded = callType.equals(CallType.ACTIVE) ? result.getActiveItemsCount() : result.getCompleteItemsCount();
-                if (itemsLoaded < result.getTotalEntries() && itemsLoaded < itemsLimit) {
+                long totalItems = callType.equals(CallType.ACTIVE) ? result.getActiveItemsCount() : result.getCompleteItemsCount();
+                if (itemsLoaded < totalItems && itemsLoaded < itemsLimit) {
                     unprocessed.add(result.getQuery());
                     result.setStatus(Result.Status.LOADING);
                 } else if (callType.equals(CallType.COMPLETED)){
                     result.setStatus(Result.Status.COMPLETED);
-                    log(String.format("%-30s%s", result.getQuery(), " - all items found: " + result.getItems().size()));
+                    log(String.format("%-30s%s", "Query: " +  result.getQuery(), " - all items found: " + result.getItems().size()));
                 }
 
                 checkIsComplete();
@@ -142,7 +143,7 @@ public class ItemsSeeker {
                 Result result = new Result(query);
                 result.setStatus(Result.Status.ERROR);
                 results.putIfAbsent(result.getQuery(), result);
-                log(String.format("%-30s%s", result.getQuery(),
+                log(String.format("%-30s%s", "Query: " + result.getQuery(),
                         " - page " + call.request().url().queryParameter("paginationInput.pageNumber") + ": loading error!"));
                 checkIsComplete();
                 sendNewRequests();
@@ -157,7 +158,7 @@ public class ItemsSeeker {
                 log("Active items loading is finished. Starting loading of complete items");
                 callType = CallType.COMPLETED;
                 unprocessed.addAll(results.keySet());
-                sendNewRequests();
+//                sendNewRequests();
             } else {
                 onFinish();
             }
@@ -200,8 +201,14 @@ public class ItemsSeeker {
                     .get(0).getAsJsonObject()
                     .get("totalEntries").getAsJsonArray()
                     .get(0).getAsInt();
-            if (callType.equals(CallType.COMPLETED)) result.setTotalEntriesComplete(totalItems);
-            else result.setTotalEntries(totalItems);
+            //Search url
+            try {
+                System.out.println(root.getAsJsonArray(callType.getRootName()).get(0).getAsJsonObject().get("itemSearchURL").getAsString());
+            } catch (Exception e) {
+                System.out.println("Unable to extract search URL");
+            }
+            if (callType.equals(CallType.COMPLETED)) result.setTotalCompleteItems(totalItems);
+            else result.setTotalActiveItems(totalItems);
             //Items
             JsonObject searchResult = root.getAsJsonArray(callType.getRootName())
                     .get(0).getAsJsonObject()
@@ -225,8 +232,11 @@ public class ItemsSeeker {
                             .get(0).getAsJsonObject()
                             .get("sellingState").getAsJsonArray()
                             .get(0).getAsString();
-                    item = new Item(itemId, price, sellingStatus);
-                    System.out.println(item);
+                    String itemUrl = jsonItem.getAsJsonObject()
+                            .get("viewItemURL").getAsJsonArray()
+                            .get(0).getAsString();
+                    item = new Item(itemId, price, sellingStatus, itemUrl);
+                    log("Item: " + item.toString());
                 }
                 allItems.put(itemId, item);
                 result.addItem(item);

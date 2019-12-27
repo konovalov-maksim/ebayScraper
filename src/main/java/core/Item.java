@@ -4,13 +4,15 @@ import java.util.Objects;
 
 public class Item {
 
-    public Item(String itemId, double price, String sellingStatus) {
+    public Item(String itemId, double price, String sellingStatus, String itemUrl) {
         this.itemId = itemId;
         this.price = price;
         this.sellingStatus = sellingStatus;
+        this.itemUrl = itemUrl;
     }
 
     private final String itemId;
+    private final String itemUrl;
     private final double price;
     private final String sellingStatus;
 
@@ -49,6 +51,6 @@ public class Item {
 
     @Override
     public String toString() {
-        return String.format("%-25s%-10s%7.2f", itemId, sellingStatus, price);
+        return String.format("%-25s%-20s%7.2f  %s", itemId, sellingStatus, price, itemUrl);
     }
 }
