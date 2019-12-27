@@ -39,7 +39,6 @@ public class ItemsSeeker {
     private String categoryId = null;
 
     private LinkedHashMap<String, Result> results = new LinkedHashMap<>(); //Here stored all found results without duplicates
-    private HashMap<String, Item> allItems = new HashMap<>(); //Here stored all found items and their IDs without duplicates
 
     public ItemsSeeker(List<String> queries, String appname, Condition condition, ResultsLoadingListener resultsLoadingListener) {
         unprocessed.addAll(queries.stream().distinct().collect(Collectors.toList()));
@@ -73,9 +72,9 @@ public class ItemsSeeker {
                 page = 1;
                 maxOnPage = Math.min(itemsLimit, MAX_ITEMS_PER_PAGE);
             } else {
-                long itemsLoaded = callType.equals(CallType.ACTIVE) ? result.getActiveItemsCount() : result.getCompleteItemsCount();
-                page = (itemsLoaded / MAX_ITEMS_PER_PAGE) + 1;
-                maxOnPage = Math.min(itemsLimit - itemsLoaded, MAX_ITEMS_PER_PAGE);
+                long itemsFound = callType.equals(CallType.ACTIVE) ? result.getActiveItemsFound() : result.getCompleteItemsFound();
+                page = Math.round(itemsFound * 1.0 / MAX_ITEMS_PER_PAGE) + 1;
+                maxOnPage = Math.min(itemsLimit - itemsFound, MAX_ITEMS_PER_PAGE);
             }
             if (page > MAX_PAGE_NUMBER) {
                 log(String.format("%-30s%s", query, " - all items found on " + MAX_PAGE_NUMBER + " pages"));
@@ -113,21 +112,21 @@ public class ItemsSeeker {
                 if (oldResult == null) {
                     results.put(newResult.getQuery(), newResult);
                     result = newResult;
-                }
-                else {
+                } else {
                     oldResult.getItems().addAll(newResult.getItems());
+                    oldResult.setCompleteItemsTotal(newResult.getCompleteItemsTotal());
                     result = oldResult;
                 }
 
                 //Adding to queue again if needed to load remaining pagination pages
-                long itemsLoaded = callType.equals(CallType.ACTIVE) ? result.getActiveItemsCount() : result.getCompleteItemsCount();
-                long totalItems = callType.equals(CallType.ACTIVE) ? result.getActiveItemsCount() : result.getCompleteItemsCount();
-                if (itemsLoaded < totalItems && itemsLoaded < itemsLimit) {
+                long itemsFound = callType.equals(CallType.ACTIVE) ? result.getActiveItemsFound() : result.getCompleteItemsFound();
+                long itemsTotal = callType.equals(CallType.ACTIVE) ? result.getActiveItemsTotal() : result.getCompleteItemsTotal();
+                if (itemsFound < itemsTotal && itemsFound < itemsLimit) {
                     unprocessed.add(result.getQuery());
                     result.setStatus(Result.Status.LOADING);
-                } else if (callType.equals(CallType.COMPLETED)){
+                } else if (callType.equals(CallType.COMPLETED)) {
                     result.setStatus(Result.Status.COMPLETED);
-                    log(String.format("%-30s%s", "Query: " +  result.getQuery(), " - all items found: " + result.getItems().size()));
+                    log(String.format("%-30s%s", "Query: " + result.getQuery(), " - all items found: " + result.getItems().size()));
                 }
 
                 checkIsComplete();
@@ -201,14 +200,8 @@ public class ItemsSeeker {
                     .get(0).getAsJsonObject()
                     .get("totalEntries").getAsJsonArray()
                     .get(0).getAsInt();
-            //Search url
-            try {
-                System.out.println(root.getAsJsonArray(callType.getRootName()).get(0).getAsJsonObject().get("itemSearchURL").getAsString());
-            } catch (Exception e) {
-                System.out.println("Unable to extract search URL");
-            }
-            if (callType.equals(CallType.COMPLETED)) result.setTotalCompleteItems(totalItems);
-            else result.setTotalActiveItems(totalItems);
+            if (callType.equals(CallType.COMPLETED)) result.setCompleteItemsTotal(totalItems);
+            else result.setActiveItemsTotal(totalItems);
             //Items
             JsonObject searchResult = root.getAsJsonArray(callType.getRootName())
                     .get(0).getAsJsonObject()
@@ -218,27 +211,24 @@ public class ItemsSeeker {
             JsonArray jsonItems = searchResult.get("item").getAsJsonArray();
             for (JsonElement jsonItem : jsonItems) {
                 String itemId = jsonItem.getAsJsonObject().get("itemId").getAsString();
-                //Checking if item already was found, it's need to have no duplicates
-                Item item = allItems.get(itemId);
-                if (item == null) {
-                    double price = jsonItem.getAsJsonObject()
-                            .get("sellingStatus").getAsJsonArray()
-                            .get(0).getAsJsonObject()
-                            .get("currentPrice").getAsJsonArray()
-                            .get(0).getAsJsonObject()
-                            .get("__value__").getAsDouble();
-                    String sellingStatus = jsonItem.getAsJsonObject()
-                            .get("sellingStatus").getAsJsonArray()
-                            .get(0).getAsJsonObject()
-                            .get("sellingState").getAsJsonArray()
-                            .get(0).getAsString();
-                    String itemUrl = jsonItem.getAsJsonObject()
-                            .get("viewItemURL").getAsJsonArray()
-                            .get(0).getAsString();
-                    item = new Item(itemId, price, sellingStatus, itemUrl);
-                    log("Item: " + item.toString());
-                }
-                allItems.put(itemId, item);
+
+                double price = jsonItem.getAsJsonObject()
+                        .get("sellingStatus").getAsJsonArray()
+                        .get(0).getAsJsonObject()
+                        .get("currentPrice").getAsJsonArray()
+                        .get(0).getAsJsonObject()
+                        .get("__value__").getAsDouble();
+                String sellingStatus = jsonItem.getAsJsonObject()
+                        .get("sellingStatus").getAsJsonArray()
+                        .get(0).getAsJsonObject()
+                        .get("sellingState").getAsJsonArray()
+                        .get(0).getAsString();
+                String itemUrl = jsonItem.getAsJsonObject()
+                        .get("viewItemURL").getAsJsonArray()
+                        .get(0).getAsString();
+                Item item = new Item(itemId, price, sellingStatus, itemUrl);
+                log("Item: " + item.toString());
+
                 result.addItem(item);
             }
 
@@ -264,11 +254,10 @@ public class ItemsSeeker {
                 .addQueryParameter("GLOBAL-ID", "EBAY-US")
                 .addQueryParameter("SERVICE-VERSION", "1.13.0")
                 .addQueryParameter("SECURITY-APPNAME", APP_NAME)
-                .addQueryParameter("RESPONSE-DATA-FORMAT", "JSON")
-                ;
+                .addQueryParameter("RESPONSE-DATA-FORMAT", "JSON");
 
         //Condition items filter. Docs - https://developer.ebay.com/DevZone/finding/CallRef/types/ItemFilterType.html
-        if (condition.equals(Condition.NEW))  {
+        if (condition.equals(Condition.NEW)) {
             urlBuilder.addQueryParameter("itemFilter(0).name", "Condition")
                     .addQueryParameter("itemFilter(0).value(0)", "1000") //New
                     .addQueryParameter("itemFilter(0).value(1)", "1500") //New other (see details)
@@ -286,7 +275,7 @@ public class ItemsSeeker {
         }
         //Category filter
         if (categoryId != null) urlBuilder.addQueryParameter("categoryId", categoryId);
-       preparedUrl = urlBuilder.build();
+        preparedUrl = urlBuilder.build();
     }
 
     private void log(String message) {
@@ -324,6 +313,7 @@ public class ItemsSeeker {
 
     public interface ResultsLoadingListener {
         void onResultReceived(Result result);
+
         void onAllResultsReceived();
     }
 
@@ -354,10 +344,6 @@ public class ItemsSeeker {
 
     public List<Result> getResults() {
         return new ArrayList<>(results.values());
-    }
-
-    public HashMap<String, Item> getAllItems() {
-        return allItems;
     }
 
     public boolean isRunning() {

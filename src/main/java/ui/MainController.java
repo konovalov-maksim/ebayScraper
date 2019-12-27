@@ -37,10 +37,12 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private TableView<Result> table;
     @FXML private TableColumn<Result, String> queryCol;
     @FXML private TableColumn<Result, String> statusCol;
-    @FXML private TableColumn<Result, Integer> itemsFoundCol;
-    @FXML private TableColumn<Result, Integer> itemsListedCol;
+    @FXML private TableColumn<Result, Integer> activeItemsTotalCol;
+    @FXML private TableColumn<Result, Integer> activeItemsFoundCol;
+    @FXML private TableColumn<Result, Integer> completeItemsTotalCol;
+    @FXML private TableColumn<Result, Integer> completeItemsFoundCol;
+    @FXML private TableColumn<Result, Integer> soldItemsCol;
     @FXML private TableColumn<Result, Double> avgPriceListedCol;
-    @FXML private TableColumn<Result, Integer> itemsSoldCol;
     @FXML private TableColumn<Result, Double> avgPriceSoldCol;
     @FXML private TableColumn<Result, String> soldRatioCol;
     private TableContextMenu tableContextMenu;
@@ -66,21 +68,25 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
         queryCol.setCellValueFactory(new PropertyValueFactory<>("query"));
         statusCol.setCellValueFactory(new PropertyValueFactory<>("statusString"));
-        itemsFoundCol.setCellValueFactory(new PropertyValueFactory<>("itemsCount"));
-        itemsListedCol.setCellValueFactory(new PropertyValueFactory<>("activeItemsCount"));
+        activeItemsTotalCol.setCellValueFactory(new PropertyValueFactory<>("activeItemsTotal"));
+        activeItemsFoundCol.setCellValueFactory(new PropertyValueFactory<>("activeItemsFound"));
+        completeItemsTotalCol.setCellValueFactory(new PropertyValueFactory<>("completeItemsTotal"));
+        completeItemsFoundCol.setCellValueFactory(new PropertyValueFactory<>("completeItemsFound"));
+        soldItemsCol.setCellValueFactory(new PropertyValueFactory<>("soldItems"));
         avgPriceListedCol.setCellValueFactory(new PropertyValueFactory<>("avgPriceListed"));
-        itemsSoldCol.setCellValueFactory(new PropertyValueFactory<>("soldItemsCount"));
         avgPriceSoldCol.setCellValueFactory(new PropertyValueFactory<>("avgPriceSold"));
         soldRatioCol.setCellValueFactory(new PropertyValueFactory<>("soldRatio"));
 
-        queryCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
+        queryCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        itemsFoundCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        itemsListedCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        activeItemsTotalCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        activeItemsFoundCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        completeItemsTotalCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        completeItemsFoundCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        soldItemsCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         avgPriceListedCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        soldRatioCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        itemsSoldCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         avgPriceSoldCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        soldRatioCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         table.setItems(results);
         tableContextMenu = new TableContextMenu(table);
 

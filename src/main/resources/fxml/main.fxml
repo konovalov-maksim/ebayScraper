@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<SplitPane prefHeight="700.0" prefWidth="1050.0" xmlns="http://javafx.com/javafx/11.0.1"
+<SplitPane prefHeight="700.0" prefWidth="1300.0" xmlns="http://javafx.com/javafx/11.0.1"
            xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.MainController" orientation="VERTICAL"
            dividerPositions="0.3, 0.8" styleClass="padding-pane">
     <VBox>
@@ -12,7 +12,7 @@
         <TextArea fx:id="inputTa"/>
         <HBox alignment="CENTER_LEFT">
             <Label text="Items limit:"/>
-            <TextField fx:id="itemsLimitTf" text="100" prefWidth="50"/>
+            <TextField fx:id="itemsLimitTf" text="250" prefWidth="50"/>
             <Separator orientation="VERTICAL"/>
             <Label text="Max threads count:"/>
             <Spinner fx:id="maxThreadsSpn" prefWidth="50"/>
@@ -39,10 +39,12 @@
         <columns>
             <TableColumn fx:id="queryCol" text="Query"/>
             <TableColumn fx:id="statusCol" text="Status"/>
-            <TableColumn fx:id="itemsFoundCol" text="Items found" styleClass="number-column"/>
-            <TableColumn fx:id="itemsListedCol" text="Items listed" styleClass="number-column"/>
+            <TableColumn fx:id="activeItemsTotalCol" text="Active items total" styleClass="number-column"/>
+            <TableColumn fx:id="activeItemsFoundCol" text="Active items found" styleClass="number-column"/>
+            <TableColumn fx:id="completeItemsTotalCol" text="Complete items total" styleClass="number-column"/>
+            <TableColumn fx:id="completeItemsFoundCol" text="Complete items found" styleClass="number-column"/>
+            <TableColumn fx:id="soldItemsCol" text="Sold items found" styleClass="number-column"/>
             <TableColumn fx:id="avgPriceListedCol" text="AVG $ Listed" styleClass="number-column"/>
-            <TableColumn fx:id="itemsSoldCol" text="Items sold" styleClass="number-column"/>
             <TableColumn fx:id="avgPriceSoldCol" text="AVG $ Sold" styleClass="number-column"/>
             <TableColumn fx:id="soldRatioCol" text="Sold, %" styleClass="number-column"/>
         </columns>

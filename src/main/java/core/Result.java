@@ -11,8 +11,8 @@ public class Result {
     private String query;
     private List<Item> items = new ArrayList<>();
     private boolean isSuccess;
-    private int totalActiveItems;
-    private int totalCompleteItems;
+    private int activeItemsTotal;
+    private int completeItemsTotal;
     private Status status;
 
 
@@ -22,19 +22,19 @@ public class Result {
         isSuccess = false;
     }
 
-    public long getActiveItemsCount() {
+    public long getActiveItemsFound() {
         return items.stream()
                 .filter(i -> !i.isComplete())
                 .count();
     }
 
-    public long getCompleteItemsCount() {
+    public long getCompleteItemsFound() {
         return items.stream()
                 .filter(Item::isComplete)
                 .count();
     }
 
-    public long getSoldItemsCount() {
+    public long getSoldItems() {
         return items.stream()
                 .filter(Item::isSold)
                 .count();
@@ -58,7 +58,7 @@ public class Result {
 
     public String getSoldRatio() {
         if (items.size() == 0) return "0.0%";
-        return  round(getSoldItemsCount() * 100.0 / items.size(), 1) + "%";
+        return  round(getSoldItems() * 100.0 / items.size(), 1) + "%";
     }
 
     public int getItemsCount() {
@@ -93,16 +93,12 @@ public class Result {
         isSuccess = success;
     }
 
-    public int getTotalActiveItems() {
-        return totalActiveItems;
+    public int getActiveItemsTotal() {
+        return activeItemsTotal;
     }
 
-    void setTotalActiveItems(int totalActiveItems) {
-        this.totalActiveItems = totalActiveItems;
-    }
-
-    public String getIsSuccessString() {
-        return isSuccess ? "Success": "Error";
+    void setActiveItemsTotal(int activeItemsTotal) {
+        this.activeItemsTotal = activeItemsTotal;
     }
 
     private static double round(double value, int places) {
@@ -142,12 +138,12 @@ public class Result {
         }
     }
 
-    public int getTotalCompleteItems() {
-        return totalCompleteItems;
+    public int getCompleteItemsTotal() {
+        return completeItemsTotal;
     }
 
-    public void setTotalCompleteItems(int totalCompleteItems) {
-        this.totalCompleteItems = totalCompleteItems;
+    public void setCompleteItemsTotal(int completeItemsTotal) {
+        this.completeItemsTotal = completeItemsTotal;
     }
 }
 
