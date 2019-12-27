@@ -16,12 +16,11 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class MainController implements Initializable, Logger, ItemsSeeker.ResultsLoadingListener, ItemsLoader.ItemsLoadingListener {
+public class MainController implements Initializable, Logger, ItemsSeeker.ResultsLoadingListener {
 
     @FXML private TextArea inputTa;
     @FXML private TextArea consoleTa;
     @FXML private Button searchingBtn;
-    @FXML private Button extractionBtn;
     @FXML private Button stopBtn;
     @FXML private Button clearBtn;
     @FXML private ComboBox<String> conditionCb;
@@ -37,13 +36,13 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
     @FXML private TableView<Result> table;
     @FXML private TableColumn<Result, String> queryCol;
-    @FXML private TableColumn<Result, String> isSuccessCol;
-    @FXML private TableColumn<Result, String> itemsProgCol;
-    @FXML private TableColumn<Result, Integer> totalEntriesCol;
-    @FXML private TableColumn<Result, Integer> itemsCountCol;
-    @FXML private TableColumn<Result, Double> avgPriceCol;
-    @FXML private TableColumn<Result, Integer> soldCountCol;
-    @FXML private TableColumn<Result, Double> avgPurchasePriceCol;
+    @FXML private TableColumn<Result, String> statusCol;
+    @FXML private TableColumn<Result, Integer> itemsFoundCol;
+    @FXML private TableColumn<Result, Integer> itemsListedCol;
+    @FXML private TableColumn<Result, Double> avgPriceListedCol;
+    @FXML private TableColumn<Result, Integer> itemsSoldCol;
+    @FXML private TableColumn<Result, Double> avgPriceSoldCol;
+    @FXML private TableColumn<Result, String> soldRatioCol;
     private TableContextMenu tableContextMenu;
 
     private ObservableList<Result> results = FXCollections.observableArrayList();
@@ -51,7 +50,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
 
     private ItemsSeeker itemsSeeker;
-    private ItemsLoader itemsLoader;
     private String appName;
     private Category category;
 
@@ -67,27 +65,26 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         selectCategory("-1");
 
         queryCol.setCellValueFactory(new PropertyValueFactory<>("query"));
-        isSuccessCol.setCellValueFactory(new PropertyValueFactory<>("statusString"));
-        itemsProgCol.setCellValueFactory(new PropertyValueFactory<>("progressString"));
-        totalEntriesCol.setCellValueFactory(new PropertyValueFactory<>("totalEntries"));
-        itemsCountCol.setCellValueFactory(new PropertyValueFactory<>("itemsCount"));
-        avgPriceCol.setCellValueFactory(new PropertyValueFactory<>("avgPrice"));
-        soldCountCol.setCellValueFactory(new PropertyValueFactory<>("soldCount"));
-        avgPurchasePriceCol.setCellValueFactory(new PropertyValueFactory<>("avgPurchasePrice"));
+        statusCol.setCellValueFactory(new PropertyValueFactory<>("statusString"));
+        itemsFoundCol.setCellValueFactory(new PropertyValueFactory<>("itemsCount"));
+        itemsListedCol.setCellValueFactory(new PropertyValueFactory<>("activeItemsCount"));
+        avgPriceListedCol.setCellValueFactory(new PropertyValueFactory<>("avgPriceListed"));
+        itemsSoldCol.setCellValueFactory(new PropertyValueFactory<>("soldItemsCount"));
+        avgPriceSoldCol.setCellValueFactory(new PropertyValueFactory<>("avgPriceSold"));
+        soldRatioCol.setCellValueFactory(new PropertyValueFactory<>("soldRatio"));
 
         queryCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
-        isSuccessCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        itemsProgCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        totalEntriesCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        itemsCountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        avgPriceCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        soldCountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-        avgPurchasePriceCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        itemsFoundCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        itemsListedCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        avgPriceListedCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        soldRatioCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        itemsSoldCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        avgPriceSoldCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         table.setItems(results);
         tableContextMenu = new TableContextMenu(table);
 
         searchingBtn.setTooltip(new Tooltip("Start searching for items"));
-        extractionBtn.setTooltip(new Tooltip("Start detailed items information extraction"));
         clearBtn.setTooltip(new Tooltip("Clear all results"));
         parentCategoryBtn.setTooltip(new Tooltip("Select parent category"));
         subcategoryBtn.setTooltip(new Tooltip("Select subcategory"));
@@ -98,7 +95,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         conditionCb.setValue("All");
 
         searchingBtn.setDisable(false);
-        extractionBtn.setDisable(true);
         stopBtn.setDisable(true);
     }
 
@@ -134,20 +130,8 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     }
 
     @FXML
-    private void startDetailedExtraction() {
-        itemsLoader = new ItemsLoader(itemsSeeker.getAllItems(), appName, this);
-        itemsLoader.setLogger(this);
-        searchingBtn.setDisable(true);
-        extractionBtn.setDisable(true);
-        stopBtn.setDisable(false);
-        log("--- Detailed information extraction started ---");
-        itemsLoader.start();
-    }
-
-    @FXML
     private void stop() {
         if (itemsSeeker != null && itemsSeeker.isRunning()) itemsSeeker.stop();
-        if (itemsLoader != null && itemsLoader.isRunning()) itemsLoader.stop();
     }
 
     @FXML
@@ -158,7 +142,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         table.refresh();
         stopBtn.setDisable(true);
         searchingBtn.setDisable(false);
-        extractionBtn.setDisable(true);
     }
 
     @FXML
@@ -186,19 +169,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     }
 
     @Override
-    public void onItemReceived() {
-        table.refresh();
-    }
-
-    @Override
-    public void onAllItemsReceived() {
-        log("--- Detailed information extraction is completed ---");
-        searchingBtn.setDisable(true);
-        extractionBtn.setDisable(true);
-        stopBtn.setDisable(true);
-    }
-
-    @Override
     public void onResultReceived(Result result) {
         if (!resultsSet.contains(result.getQuery())) {
             resultsSet.add(result.getQuery());
@@ -212,7 +182,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         log("--- Items searching completed ---");
         stopBtn.setDisable(true);
         searchingBtn.setDisable(false);
-        extractionBtn.setDisable(false);
     }
 
     @Override

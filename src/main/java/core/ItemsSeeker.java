@@ -20,8 +20,10 @@ public class ItemsSeeker {
     private Callback callback;
     private HttpUrl preparedUrl;
     private ResultsLoadingListener resultsLoadingListener;
+    private CallType callType;
 
     private final String BASE_URL = "https://svcs.ebay.com/services/search/FindingService/v1";
+
     private boolean isRunning = false;
     private int threads;
 
@@ -45,6 +47,7 @@ public class ItemsSeeker {
         this.condition = condition;
         this.resultsLoadingListener = resultsLoadingListener;
         initCallback();
+        callType = CallType.ACTIVE;
     }
 
     public void start() {
@@ -63,30 +66,33 @@ public class ItemsSeeker {
     private void sendNewRequests() {
         while (isRunning && threads < maxThreads && !unprocessed.isEmpty()) {
             String query = unprocessed.pop();
-            int page;
-            int maxOnPage;
+            long page;
+            long maxOnPage;
             Result result = results.get(query);
             if (result == null) {
                 page = 1;
                 maxOnPage = Math.min(itemsLimit, MAX_ITEMS_PER_PAGE);
             } else {
-                page = result.getItemsCount() / MAX_ITEMS_PER_PAGE + 1;
-                maxOnPage = Math.min(itemsLimit - result.getItemsCount(), MAX_ITEMS_PER_PAGE);
+                long itemsLoaded = callType.equals(CallType.ACTIVE) ? result.getActiveItemsCount() : result.getCompleteItemsCount();
+                page = (itemsLoaded / MAX_ITEMS_PER_PAGE) + 1;
+                maxOnPage = Math.min(itemsLimit - itemsLoaded, MAX_ITEMS_PER_PAGE);
             }
             if (page > MAX_PAGE_NUMBER) {
                 log(String.format("%-30s%s", query, " - all items found on " + MAX_PAGE_NUMBER + " pages"));
                 return;
             }
 
-            HttpUrl urlWithKeywords = preparedUrl.newBuilder()
+            HttpUrl finalUrl = preparedUrl.newBuilder()
+                    .addQueryParameter("OPERATION-NAME", callType.name)
                     .addQueryParameter("keywords", query)
                     .addQueryParameter("paginationInput.pageNumber", String.valueOf(page))
                     .addQueryParameter("paginationInput.entriesPerPage", String.valueOf(maxOnPage))
                     .build();
+
             Request request = new Request.Builder()
-                    .url(urlWithKeywords)
+                    .url(finalUrl)
                     .build();
-            System.out.println(urlWithKeywords.url());
+            System.out.println(finalUrl.url());
             threads++;
             client.newCall(request).enqueue(callback);
         }
@@ -112,13 +118,15 @@ public class ItemsSeeker {
                     oldResult.getItems().addAll(newResult.getItems());
                     result = oldResult;
                 }
+
                 //Adding to queue again if needed to load remaining pagination pages
-                if (result.getItemsCount() < result.getTotalEntries() && result.getItemsCount() < itemsLimit) {
+                long itemsLoaded = callType.equals(CallType.ACTIVE) ? result.getActiveItemsCount() : result.getCompleteItemsCount();
+                if (itemsLoaded < result.getTotalEntries() && itemsLoaded < itemsLimit) {
                     unprocessed.add(result.getQuery());
                     result.setStatus(Result.Status.LOADING);
-                } else {
+                } else if (callType.equals(CallType.COMPLETED)){
                     result.setStatus(Result.Status.COMPLETED);
-                    log(String.format("%-30s%s", result.getQuery(), " - all items found: " + result.getItemsCount()));
+                    log(String.format("%-30s%s", result.getQuery(), " - all items found: " + result.getItems().size()));
                 }
 
                 checkIsComplete();
@@ -144,7 +152,15 @@ public class ItemsSeeker {
     }
 
     private void checkIsComplete() {
-        if (threads == 0 && unprocessed.isEmpty()) onFinish();
+        if (threads == 0 && unprocessed.isEmpty())
+            if (callType.equals(CallType.ACTIVE)) {
+                log("Active items loading is finished. Starting loading of complete items");
+                callType = CallType.COMPLETED;
+                unprocessed.addAll(results.keySet());
+                sendNewRequests();
+            } else {
+                onFinish();
+            }
     }
 
     private void onFinish() {
@@ -161,12 +177,12 @@ public class ItemsSeeker {
             String jsonData = response.body().string();
             JsonObject root = new Gson().fromJson(jsonData, JsonObject.class);
             //Status
-            boolean isSuccess = root.getAsJsonArray("findItemsAdvancedResponse")
+            boolean isSuccess = root.getAsJsonArray(callType.getRootName())
                     .get(0).getAsJsonObject()
                     .get("ack").getAsString()
                     .equals("Success");
             if (!isSuccess) {
-                String errorMessage = root.getAsJsonArray("findItemsAdvancedResponse")
+                String errorMessage = root.getAsJsonArray(callType.getRootName())
                         .get(0).getAsJsonObject()
                         .get("errorMessage").getAsJsonArray()
                         .get(0).getAsJsonObject()
@@ -178,15 +194,16 @@ public class ItemsSeeker {
                 return result;
             }
             //Total entries
-            int totalEntries = root.getAsJsonArray("findItemsAdvancedResponse")
+            int totalItems = root.getAsJsonArray(callType.getRootName())
                     .get(0).getAsJsonObject()
                     .get("paginationOutput").getAsJsonArray()
                     .get(0).getAsJsonObject()
                     .get("totalEntries").getAsJsonArray()
                     .get(0).getAsInt();
-            result.setTotalEntries(totalEntries);
+            if (callType.equals(CallType.COMPLETED)) result.setTotalEntriesComplete(totalItems);
+            else result.setTotalEntries(totalItems);
             //Items
-            JsonObject searchResult = root.getAsJsonArray("findItemsAdvancedResponse")
+            JsonObject searchResult = root.getAsJsonArray(callType.getRootName())
                     .get(0).getAsJsonObject()
                     .get("searchResult").getAsJsonArray()
                     .get(0).getAsJsonObject();
@@ -203,8 +220,13 @@ public class ItemsSeeker {
                             .get("currentPrice").getAsJsonArray()
                             .get(0).getAsJsonObject()
                             .get("__value__").getAsDouble();
-                    item = new Item(itemId, price);
-//                    System.out.println(itemId);
+                    String sellingStatus = jsonItem.getAsJsonObject()
+                            .get("sellingStatus").getAsJsonArray()
+                            .get(0).getAsJsonObject()
+                            .get("sellingState").getAsJsonArray()
+                            .get(0).getAsString();
+                    item = new Item(itemId, price, sellingStatus);
+                    System.out.println(item);
                 }
                 allItems.put(itemId, item);
                 result.addItem(item);
@@ -229,8 +251,6 @@ public class ItemsSeeker {
             return;
         }
         HttpUrl.Builder urlBuilder = httpUrl.newBuilder()
-//                .addQueryParameter("OPERATION-NAME", "findItemsByKeywords")
-                .addQueryParameter("OPERATION-NAME", "findItemsAdvanced")
                 .addQueryParameter("GLOBAL-ID", "EBAY-US")
                 .addQueryParameter("SERVICE-VERSION", "1.13.0")
                 .addQueryParameter("SECURITY-APPNAME", APP_NAME)
@@ -269,6 +289,27 @@ public class ItemsSeeker {
 
     public enum Condition {
         NEW, USED, ALL
+    }
+
+    private enum CallType {
+        ACTIVE("findItemsAdvanced", "findItemsAdvancedResponse"),
+        COMPLETED("findCompletedItems", "findCompletedItemsResponse");
+
+        private String name;
+        private String rootName;
+
+        CallType(String name, String rootName) {
+            this.name = name;
+            this.rootName = rootName;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getRootName() {
+            return rootName;
+        }
     }
 
     public interface ResultsLoadingListener {

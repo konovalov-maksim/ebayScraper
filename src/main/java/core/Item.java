@@ -4,47 +4,34 @@ import java.util.Objects;
 
 public class Item {
 
-    public Item(String itemId, double price) {
-        ItemId = itemId;
+    public Item(String itemId, double price, String sellingStatus) {
+        this.itemId = itemId;
         this.price = price;
-        isInfoFull = false;
+        this.sellingStatus = sellingStatus;
     }
 
-    private String ItemId;
-    private boolean isInfoFull;
-    private double price;
-    private int soldCount;
+    private final String itemId;
+    private final double price;
+    private final String sellingStatus;
 
     public double getPrice() {
         return price;
     }
 
     public String getItemId() {
-        return ItemId;
+        return itemId;
     }
 
-    public int getSoldCount() {
-        return soldCount;
+    public String getSellingStatus() {
+        return sellingStatus;
     }
 
-    public boolean isInfoFull() {
-        return isInfoFull;
+    public boolean isSold() {
+        return sellingStatus.equals("EndedWithSales");
     }
 
-    void setInfoFull(boolean infoFull) {
-        isInfoFull = infoFull;
-    }
-
-    void setItemId(String itemId) {
-        ItemId = itemId;
-    }
-
-    void setPrice(double price) {
-        this.price = price;
-    }
-
-    void setSoldCount(int soldCount) {
-        this.soldCount = soldCount;
+    public boolean isComplete() {
+        return !sellingStatus.equals("Active");
     }
 
     @Override
@@ -52,11 +39,16 @@ public class Item {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
-        return ItemId.equals(item.ItemId);
+        return itemId.equals(item.itemId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ItemId);
+        return Objects.hash(itemId);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%-25s%-10s%7.2f", itemId, sellingStatus, price);
     }
 }

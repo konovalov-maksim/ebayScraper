@@ -7,11 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
-public class Debugger implements Logger, ItemsSeeker.ResultsLoadingListener, ItemsLoader.ItemsLoadingListener {
+public class Debugger implements Logger, ItemsSeeker.ResultsLoadingListener {
 
     private static Debugger debugger;
     private ItemsSeeker itemsSeeker;
-    private ItemsLoader itemsLoader;
     private String appName;
 
     private static String[] testQueries = new String[]{"spinning reel shimano", "watches vostok"};
@@ -34,11 +33,6 @@ public class Debugger implements Logger, ItemsSeeker.ResultsLoadingListener, Ite
             System.out.println(name);
     }
 
-    private void runItemsLoading() {
-        itemsLoader = new ItemsLoader(itemsSeeker.getAllItems(), appName, this);
-        itemsLoader.start();
-    }
-
     @Override
     public void log(String message) {
         String curTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
@@ -53,21 +47,8 @@ public class Debugger implements Logger, ItemsSeeker.ResultsLoadingListener, Ite
     @Override
     public void onAllResultsReceived() {
         for (Result result : itemsSeeker.getResults()) {
-            log(result.getQuery() + ": " + result.getAvgPrice());
-        }
-        runItemsLoading();
-    }
-
-    @Override
-    public void onItemReceived() {
-        log("Item received");
-    }
-
-    @Override
-    public void onAllItemsReceived() {
-        for (Result result : itemsSeeker.getResults()) {
-            log(result.getQuery() + ": " + result.getSoldCount());
-            log(result.getQuery() + ": " + result.getAvgPurchasePrice());
+            log(result.getQuery());
         }
     }
+
 }

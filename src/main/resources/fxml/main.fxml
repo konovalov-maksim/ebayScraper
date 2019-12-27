@@ -31,7 +31,6 @@
         <Separator/>
         <HBox alignment="CENTER_RIGHT" styleClass="control-pane">
             <Button fx:id="searchingBtn" text="Search" onAction="#startSearching"/>
-            <Button fx:id="extractionBtn" text="Load info" onAction="#startDetailedExtraction"/>
             <Button fx:id="stopBtn" text="Stop" onAction="#stop"/>
             <Button fx:id="clearBtn" text="Clear" onAction="#clearAll"/>
         </HBox>
@@ -39,13 +38,13 @@
     <TableView fx:id="table">
         <columns>
             <TableColumn fx:id="queryCol" text="Query"/>
-            <TableColumn fx:id="isSuccessCol" text="Status"/>
-            <TableColumn fx:id="itemsProgCol" text="Items loading progress"/>
-            <TableColumn fx:id="totalEntriesCol" text="Total items" styleClass="number-column"/>
-            <TableColumn fx:id="itemsCountCol" text="Items found" styleClass="number-column"/>
-            <TableColumn fx:id="soldCountCol" text="Sold quantity" styleClass="number-column"/>
-            <TableColumn fx:id="avgPriceCol" text="AVG $ Listed" styleClass="number-column"/>
-            <TableColumn fx:id="avgPurchasePriceCol" text="AVG $ Sold" styleClass="number-column"/>
+            <TableColumn fx:id="statusCol" text="Status"/>
+            <TableColumn fx:id="itemsFoundCol" text="Items found" styleClass="number-column"/>
+            <TableColumn fx:id="itemsListedCol" text="Items listed" styleClass="number-column"/>
+            <TableColumn fx:id="avgPriceListedCol" text="AVG $ Listed" styleClass="number-column"/>
+            <TableColumn fx:id="itemsSoldCol" text="Items sold" styleClass="number-column"/>
+            <TableColumn fx:id="avgPriceSoldCol" text="AVG $ Sold" styleClass="number-column"/>
+            <TableColumn fx:id="soldRatioCol" text="Sold, %" styleClass="number-column"/>
         </columns>
     </TableView>
     <TextArea fx:id="consoleTa" editable="false" styleClass="console"/>

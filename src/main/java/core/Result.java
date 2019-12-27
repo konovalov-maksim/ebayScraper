@@ -12,7 +12,9 @@ public class Result {
     private List<Item> items = new ArrayList<>();
     private boolean isSuccess;
     private int totalEntries;
+    private int totalEntriesComplete;
     private Status status;
+
 
     public Result(String query) {
         this.query = query;
@@ -20,24 +22,47 @@ public class Result {
         isSuccess = false;
     }
 
+    public long getActiveItemsCount() {
+        return items.stream()
+                .filter(i -> !i.isComplete())
+                .count();
+    }
+
+    public long getCompleteItemsCount() {
+        return items.stream()
+                .filter(Item::isComplete)
+                .count();
+    }
+
+    public long getSoldItemsCount() {
+        return items.stream()
+                .filter(Item::isSold)
+                .count();
+    }
+
+    public double getAvgPriceListed() {
+        return round(items.stream()
+                .filter(i -> !i.isComplete())
+                .mapToDouble(Item::getPrice)
+                .average()
+                .orElse(0d), 2);
+    }
+
+    public double getAvgPriceSold() {
+        return round(items.stream()
+                .filter(Item::isComplete)
+                .mapToDouble(Item::getPrice)
+                .average()
+                .orElse(0d), 2);
+    }
+
+    public String getSoldRatio() {
+        if (items.size() == 0) return "0.0%";
+        return  round(getSoldItemsCount() * 100.0 / items.size(), 1) + "%";
+    }
+
     public int getItemsCount() {
         return items.size();
-    }
-
-    public int getSoldCount() {
-        return items.stream().filter(Item::isInfoFull).mapToInt(Item::getSoldCount).sum();
-    }
-
-    public double getAvgPrice() {
-        return round(items.stream().mapToDouble(Item::getPrice).average().orElse(0), 2);
-    }
-
-    public double getAvgPurchasePrice() {
-        double purchasesSum = items.stream()
-                .filter(Item::isInfoFull)
-                .mapToDouble(i -> i.getSoldCount() * i.getPrice())
-                .sum();
-        return round(getSoldCount() > 0 ? purchasesSum / getSoldCount() : 0, 2);
     }
 
     void addItem(Item item) {
@@ -80,18 +105,7 @@ public class Result {
         return isSuccess ? "Success": "Error";
     }
 
-    public double getProgress() {
-        if (items.isEmpty()) return 0d;
-        long processed = items.stream().filter(Item::isInfoFull).count();
-        return processed * 1.0 / items.size();
-    }
-
-    public String getProgressString() {
-        return round(getProgress()*100, 1) + "%";
-    }
-
-
-    public static double round(double value, int places) {
+    private static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
         BigDecimal bd = BigDecimal.valueOf(value);
@@ -126,6 +140,14 @@ public class Result {
         public String getName() {
             return statusName;
         }
+    }
+
+    public int getTotalEntriesComplete() {
+        return totalEntriesComplete;
+    }
+
+    public void setTotalEntriesComplete(int totalEntriesComplete) {
+        this.totalEntriesComplete = totalEntriesComplete;
     }
 }
 
