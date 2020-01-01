@@ -56,9 +56,19 @@ public class Result {
                 .orElse(0d), 2);
     }
 
-    public String getSoldRatio() {
+    public double getSoldRatio() {
+        if (items.size() == 0) return 0.0;
+        return  round(getSoldItems() * 1.0 / items.size(), 2);
+    }
+
+    public String getSoldRatioString() {
         if (items.size() == 0) return "0.0%";
-        return  round(getSoldItems() * 100.0 / items.size(), 1) + "%";
+        return  round(getSoldItems() * 100.0 / items.size(), 2) + "%";
+    }
+
+    public double getCurValue() {
+        if (getSoldRatio() > 0.3) return round(getAvgPriceListed() * (1 + getSoldRatio()), 2);
+        else return round(getAvgPriceSold() * (1 + getSoldRatio()), 2);
     }
 
     public int getItemsCount() {

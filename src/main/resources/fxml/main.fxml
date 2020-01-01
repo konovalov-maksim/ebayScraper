@@ -39,14 +39,14 @@
         <columns>
             <TableColumn fx:id="queryCol" text="Query"/>
             <TableColumn fx:id="statusCol" text="Status"/>
-            <TableColumn fx:id="activeItemsTotalCol" text="Active items total" styleClass="number-column"/>
             <TableColumn fx:id="activeItemsFoundCol" text="Active items found" styleClass="number-column"/>
-            <TableColumn fx:id="completeItemsTotalCol" text="Complete items total" styleClass="number-column"/>
-            <TableColumn fx:id="completeItemsFoundCol" text="Complete items found" styleClass="number-column"/>
+            <TableColumn fx:id="completeItemsTotalCol" text="Complete items total" styleClass="number-column" visible="false"/>
+            <TableColumn fx:id="completeItemsFoundCol" text="Complete items found" styleClass="number-column" visible="false"/>
             <TableColumn fx:id="soldItemsCol" text="Sold items found" styleClass="number-column"/>
             <TableColumn fx:id="avgPriceListedCol" text="AVG $ Listed" styleClass="number-column"/>
             <TableColumn fx:id="avgPriceSoldCol" text="AVG $ Sold" styleClass="number-column"/>
             <TableColumn fx:id="soldRatioCol" text="Sold, %" styleClass="number-column"/>
+            <TableColumn fx:id="curValueCol" text="Current value" styleClass="number-column"/>
         </columns>
     </TableView>
     <TextArea fx:id="consoleTa" editable="false" styleClass="console"/>
