@@ -76,13 +76,11 @@ public class UpcConvertor {
                     String jsonData = response.body().string();
                     JsonObject root = new Gson().fromJson(jsonData, JsonObject.class);
                     JsonArray results = root.get("results").getAsJsonArray();
-                    if (results.size() == 0) {
-                        log("No results found for UPC " + upc);
-                        return;
+                    if (results.size() == 0) log("No results found for UPC " + upc);
+                    else {
+                        Release release = new Gson().fromJson(results.get(0), Release.class);
+                        convertorListener.onUpcConverted(upc, release.toLimitedString(lengthLimit));
                     }
-                    Release release = new Gson().fromJson(results.get(0), Release.class);
-
-                    convertorListener.onUpcConverted(upc, release.toLimitedString(lengthLimit));
                 } catch (Exception e) {
                     e.printStackTrace();
                     log("Failed to convert upc " + upc);
@@ -92,7 +90,7 @@ public class UpcConvertor {
             }
 
             @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            public synchronized void onFailure(@NotNull Call call, @NotNull IOException e) {
                 threads--;
                 log("Failed to convert upc " + call.request().url().queryParameter("barcode"));
                 checkIsComplete();
@@ -102,6 +100,7 @@ public class UpcConvertor {
     }
 
     private void checkIsComplete() {
+        log("Threads: " + threads + " unprocessed: " + unprocessed.size());
         if (threads == 0 && unprocessed.isEmpty()) onFinish();
     }
 

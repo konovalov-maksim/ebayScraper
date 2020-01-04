@@ -33,6 +33,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private ComboBox<String> categoryCb;
     @FXML private Button subcategoryBtn;
     @FXML private Button parentCategoryBtn;
+    @FXML private Button convertBtn;
     @FXML private TextField lengthLimitTf;
 
 
@@ -241,6 +242,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
             e.printStackTrace();
         }
         log("UPCs conversion started");
+        convertBtn.setDisable(true);
         convertor.start();
 
     }
@@ -255,6 +257,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @Override
     public void onAllUpcConverted() {
         log("All UPCs converted");
-
+        convertBtn.setDisable(false);
     }
 }
