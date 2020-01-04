@@ -17,9 +17,10 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class MainController implements Initializable, Logger, ItemsSeeker.ResultsLoadingListener {
+public class MainController implements Initializable, Logger, ItemsSeeker.ResultsLoadingListener, UpcConvertor.ConvertorListener {
 
-    @FXML private TextArea inputTa;
+    @FXML private TextArea queriesTa;
+    @FXML private TextArea upcTa;
     @FXML private TextArea consoleTa;
     @FXML private Button searchingBtn;
     @FXML private Button stopBtn;
@@ -54,6 +55,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
     private ItemsSeeker itemsSeeker;
     private String appName;
+    private String discogsToken;
     private Category category;
 
 
@@ -61,8 +63,9 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     public void initialize(URL location, ResourceBundle resources) {
         try {
             appName = Files.readAllLines(Paths.get("key.txt")).get(0);
+            discogsToken = Files.readAllLines(Paths.get("discogs_token.txt")).get(0);
         } catch (IOException e) {
-            log("Unable to read app name");
+            log("Unable to read token");
         }
         Category.setAppName(appName);
         selectCategory("-1");
@@ -115,11 +118,11 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     private void startSearching() {
         clearAll();
 
-        if (inputTa.getText() == null || inputTa.getText().isEmpty()) {
+        if (queriesTa.getText() == null || queriesTa.getText().isEmpty()) {
             showAlert("Error", "Queries not specified");
             return;
         }
-        List<String> queries = Arrays.asList(inputTa.getText().split("\\r?\\n"));
+        List<String> queries = Arrays.asList(queriesTa.getText().split("\\r?\\n"));
         itemsSeeker = new ItemsSeeker(queries, appName, getCondition(), this);
         itemsSeeker.setLogger(this);
         itemsSeeker.setMaxThreads(maxThreadsSpn.getValue());
@@ -221,7 +224,29 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     }
 
     @FXML
-    private void covertUpcs(){
+    private void convertUpcs(){
+        if (upcTa.getText() == null || upcTa.getText().isEmpty()) {
+            showAlert("Error", "Queries not specified");
+            return;
+        }
+        List<String> upcs = Arrays.asList(upcTa.getText().split("\\r?\\n"));
+        UpcConvertor convertor = new UpcConvertor(upcs, discogsToken, this);
+        convertor.setLogger(this);
+        convertor.setLengthLimit(100);
+        log("UPCs conversion started");
+        convertor.start();
 
+    }
+
+    @Override
+    public void onUpcConverted(String upc, String result) {
+        queriesTa.setText(queriesTa.getText()
+                + (queriesTa.getText() == null || queriesTa.getText().isEmpty() ? "" : "\n")
+                + result);
+    }
+
+    @Override
+    public void onAllUpcConverted() {
+        log("All UPCs converted");
     }
 }
