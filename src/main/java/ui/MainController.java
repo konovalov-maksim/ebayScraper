@@ -1,6 +1,7 @@
 package ui;
 
 import core.*;
+import core.entities.Release;
 import core.entities.Result;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -22,6 +23,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
     @FXML private TextArea queriesTa;
     @FXML private TextArea upcTa;
+    @FXML private TextArea fullTitleTa;
     @FXML private TextArea consoleTa;
     @FXML private Button searchingBtn;
     @FXML private Button stopBtn;
@@ -35,7 +37,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private Button subcategoryBtn;
     @FXML private Button parentCategoryBtn;
     @FXML private Button convertBtn;
-    @FXML private TextField lengthLimitTf;
 
 
 
@@ -88,8 +89,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         queryCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
         statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         activeItemsFoundCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-//        completeItemsTotalCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
-//        completeItemsFoundCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         soldItemsCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         avgPriceListedCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
         avgPriceSoldCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
@@ -240,11 +239,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
                 .collect(Collectors.toList());
         convertor = new UpcConvertor(upcs, discogsToken, this);
         convertor.setLogger(this);
-        try {
-            convertor.setLengthLimit(Integer.parseInt(lengthLimitTf.getText()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        fullTitleTa.setText("");
         log("UPCs conversion started");
         convertBtn.setDisable(true);
         convertor.start();
@@ -252,10 +247,14 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     }
 
     @Override
-    public void onUpcConverted(String upc, String result) {
+    public void onUpcConverted(String upc, Release release) {
         queriesTa.setText(queriesTa.getText()
                 + (queriesTa.getText() == null || queriesTa.getText().isEmpty() ? "" : "\n")
-                + result);
+                + release.getTitle());
+
+        fullTitleTa.setText((fullTitleTa.getText() == null || fullTitleTa.getText().isEmpty() ? "" : "\n")
+                + release.toString()
+        );
     }
 
     @Override

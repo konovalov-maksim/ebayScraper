@@ -24,7 +24,6 @@ public class UpcConvertor {
     private int maxThreads = 5;
     private long timeout = 10000;
     private ConvertorListener convertorListener;
-    private int lengthLimit = Integer.MAX_VALUE;
 
     private int threads;
     private boolean isRunning;
@@ -79,7 +78,7 @@ public class UpcConvertor {
                     if (results.size() == 0) log("No results found for UPC " + upc);
                     else {
                         Release release = new Gson().fromJson(results.get(0), Release.class);
-                        convertorListener.onUpcConverted(upc, release.toLimitedString(lengthLimit));
+                        convertorListener.onUpcConverted(upc, release);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -110,7 +109,7 @@ public class UpcConvertor {
     }
 
     public interface ConvertorListener {
-        void onUpcConverted(String upc, String result);
+        void onUpcConverted(String upc, Release release);
         void onAllUpcConverted();
     }
 
@@ -140,13 +139,5 @@ public class UpcConvertor {
 
     public void setTimeout(long timeout) {
         this.timeout = timeout;
-    }
-
-    public int getLengthLimit() {
-        return lengthLimit;
-    }
-
-    public void setLengthLimit(int lengthLimit) {
-        this.lengthLimit = lengthLimit;
     }
 }

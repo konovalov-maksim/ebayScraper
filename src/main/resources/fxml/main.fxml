@@ -12,17 +12,13 @@
                 <Label text="Input queries: "/>
                 <TextArea fx:id="queriesTa"/>
             </VBox>
-            <VBox alignment="CENTER">
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="Length limit:"/>
-                    <TextField fx:id="lengthLimitTf" text="90" prefWidth="40"/>
-                </HBox>
-                <Button text="Convert" fx:id="convertBtn" onAction="#convertUpcs"/>
-            </VBox>
-
             <VBox HBox.hgrow="ALWAYS">
                 <Label text="UPC:"/>
                 <TextArea fx:id="upcTa"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS">
+                <Label text="Converted titles:"/>
+                <TextArea fx:id="fullTitleTa"/>
             </VBox>
         </HBox>
         <HBox alignment="CENTER_LEFT">
@@ -47,6 +43,7 @@
         <HBox alignment="CENTER_RIGHT" styleClass="control-pane">
             <Button fx:id="searchingBtn" text="Search" onAction="#startSearching"/>
             <Button fx:id="stopBtn" text="Stop" onAction="#stop"/>
+            <Button fx:id="convertBtn" text="Convert UPCs" onAction="#convertUpcs"/>
             <Button fx:id="clearBtn" text="Clear" onAction="#clearAll"/>
         </HBox>
     </VBox>

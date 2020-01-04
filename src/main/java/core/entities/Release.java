@@ -68,7 +68,7 @@ public class Release {
     public String toString() {
         return (title != null ? title + " " : "")
                 + (year != null ? year + " " : "")
-                + (genre.size() > 0 ? String.join(" ", genre).length() + " " : "")
+                + (genre.size() > 0 ? String.join(" ", genre) + " " : "")
                 + (format.size() > 0 ? String.join(" ", format) : "")
                 ;
     }
