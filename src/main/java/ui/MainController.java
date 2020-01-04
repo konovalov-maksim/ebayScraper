@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainController implements Initializable, Logger, ItemsSeeker.ResultsLoadingListener, UpcConvertor.ConvertorListener {
 
@@ -233,7 +234,10 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
             showAlert("Error", "UPCs not specified");
             return;
         }
-        List<String> upcs = Arrays.asList(upcTa.getText().split("\\r?\\n"));
+        List<String> upcs = Arrays.stream(upcTa.getText().split("\\r?\\n"))
+                .distinct()
+                .filter(u -> u.length() > 0)
+                .collect(Collectors.toList());
         convertor = new UpcConvertor(upcs, discogsToken, this);
         convertor.setLogger(this);
         try {

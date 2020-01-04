@@ -100,7 +100,6 @@ public class UpcConvertor {
     }
 
     private void checkIsComplete() {
-        log("Threads: " + threads + " unprocessed: " + unprocessed.size());
         if (threads == 0 && unprocessed.isEmpty()) onFinish();
     }
 

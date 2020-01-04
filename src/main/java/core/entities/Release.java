@@ -66,10 +66,10 @@ public class Release {
 
     @Override
     public String toString() {
-        return title + " "
-                + year + " "
-                + String.join(" ", genre) + " "
-                + String.join(" ", format)
+        return (title != null ? title + " " : "")
+                + (year != null ? year + " " : "")
+                + (genre.size() > 0 ? String.join(" ", genre).length() + " " : "")
+                + (format.size() > 0 ? String.join(" ", format) : "")
                 ;
     }
 }
