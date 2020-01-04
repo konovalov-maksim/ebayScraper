@@ -82,7 +82,7 @@ public class UpcConvertor {
                     }
                     Release release = new Gson().fromJson(results.get(0), Release.class);
 
-                    convertorListener.onUpcConverted(upc, release.toString());
+                    convertorListener.onUpcConverted(upc, release.toLimitedString(lengthLimit));
                 } catch (Exception e) {
                     e.printStackTrace();
                     log("Failed to convert upc " + upc);

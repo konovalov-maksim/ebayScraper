@@ -33,6 +33,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML private ComboBox<String> categoryCb;
     @FXML private Button subcategoryBtn;
     @FXML private Button parentCategoryBtn;
+    @FXML private TextField lengthLimitTf;
 
 
 
@@ -54,6 +55,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
 
     private ItemsSeeker itemsSeeker;
+    private UpcConvertor convertor;
     private String appName;
     private String discogsToken;
     private Category category;
@@ -117,6 +119,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML
     private void startSearching() {
         clearAll();
+        if (convertor != null) convertor.stop();
 
         if (queriesTa.getText() == null || queriesTa.getText().isEmpty()) {
             showAlert("Error", "Queries not specified");
@@ -226,13 +229,17 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML
     private void convertUpcs(){
         if (upcTa.getText() == null || upcTa.getText().isEmpty()) {
-            showAlert("Error", "Queries not specified");
+            showAlert("Error", "UPCs not specified");
             return;
         }
         List<String> upcs = Arrays.asList(upcTa.getText().split("\\r?\\n"));
-        UpcConvertor convertor = new UpcConvertor(upcs, discogsToken, this);
+        convertor = new UpcConvertor(upcs, discogsToken, this);
         convertor.setLogger(this);
-        convertor.setLengthLimit(100);
+        try {
+            convertor.setLengthLimit(Integer.parseInt(lengthLimitTf.getText()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         log("UPCs conversion started");
         convertor.start();
 
@@ -248,5 +255,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @Override
     public void onAllUpcConverted() {
         log("All UPCs converted");
+
     }
 }

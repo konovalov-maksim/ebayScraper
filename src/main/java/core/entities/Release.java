@@ -5,7 +5,6 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Release {
 
@@ -55,6 +54,14 @@ public class Release {
 
     public void setFormat(List<String> format) {
         this.format = format;
+    }
+
+    public String toLimitedString(int limit) {
+        String result = this.toString();
+        if (result.length() <= limit) return result;
+        result = result.substring(0, limit);
+        result = result.substring(0, result.lastIndexOf(" "));
+        return result;
     }
 
     @Override

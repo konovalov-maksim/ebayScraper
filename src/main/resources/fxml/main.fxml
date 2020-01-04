@@ -12,7 +12,14 @@
                 <Label text="Input queries: "/>
                 <TextArea fx:id="queriesTa"/>
             </VBox>
-            <Button text="Convert" fx:id="convertBtn" onAction="#convertUpcs"/>
+            <VBox alignment="CENTER">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Length limit:"/>
+                    <TextField fx:id="lengthLimitTf" text="90" prefWidth="40"/>
+                </HBox>
+                <Button text="Convert" fx:id="convertBtn" onAction="#convertUpcs"/>
+            </VBox>
+
             <VBox HBox.hgrow="ALWAYS">
                 <Label text="UPC:"/>
                 <TextArea fx:id="upcTa"/>
