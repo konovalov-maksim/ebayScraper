@@ -1,4 +1,5 @@
 import core.*;
+import core.entities.Result;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,6 +1,7 @@
 package ui;
 
 import core.*;
+import core.entities.Result;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -217,5 +218,10 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         if (conditionCb.getValue().equals("New")) return ItemsSeeker.Condition.NEW;
         if (conditionCb.getValue().equals("Used")) return ItemsSeeker.Condition.USED;
         return ItemsSeeker.Condition.ALL;
+    }
+
+    @FXML
+    private void covertUpcs(){
+
     }
 }

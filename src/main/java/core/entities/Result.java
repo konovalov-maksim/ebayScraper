@@ -1,4 +1,4 @@
-package core;
+package core.entities;
 
 
 import java.math.BigDecimal;
@@ -16,7 +16,7 @@ public class Result {
     private Status status;
 
 
-    Result(String query) {
+    public Result(String query) {
         this.query = query;
         this.status = Status.NEW;
         isSuccess = false;
@@ -75,7 +75,7 @@ public class Result {
         return items.size();
     }
 
-    void addItem(Item item) {
+    public void addItem(Item item) {
         items.add(item);
     }
 
@@ -99,7 +99,7 @@ public class Result {
         return isSuccess;
     }
 
-    void setIsSuccess(boolean success) {
+    public void setIsSuccess(boolean success) {
         isSuccess = success;
     }
 
@@ -107,7 +107,7 @@ public class Result {
         return activeItemsTotal;
     }
 
-    void setActiveItemsTotal(int activeItemsTotal) {
+    public void setActiveItemsTotal(int activeItemsTotal) {
         this.activeItemsTotal = activeItemsTotal;
     }
 
