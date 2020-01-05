@@ -75,10 +75,12 @@ public class UpcConvertor {
                     String jsonData = response.body().string();
                     JsonObject root = new Gson().fromJson(jsonData, JsonObject.class);
                     JsonArray results = root.get("results").getAsJsonArray();
-                    if (results.size() == 0) log("No results found for UPC " + upc);
-                    else {
+                    if (results.size() > 0) {
                         Release release = new Gson().fromJson(results.get(0), Release.class);
                         convertorListener.onUpcConverted(upc, release);
+                    } else {
+                        convertorListener.onUpcNotFound(upc);
+                        log("No results found for UPC " + upc);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -110,6 +112,7 @@ public class UpcConvertor {
 
     public interface ConvertorListener {
         void onUpcConverted(String upc, Release release);
+        void onUpcNotFound(String upc);
         void onAllUpcConverted();
     }
 

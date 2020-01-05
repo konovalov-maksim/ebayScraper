@@ -55,6 +55,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
     private ObservableList<Result> results = FXCollections.observableArrayList();
     private Set<String> resultsSet = new HashSet<>();
+    private List<String> notFoundUpcs = new ArrayList<>();
 
 
     private ItemsSeeker itemsSeeker;
@@ -161,6 +162,9 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         table.refresh();
         stopBtn.setDisable(true);
         searchingBtn.setDisable(false);
+        queriesTa.setText("");
+        upcTa.setText("");
+        fullTitleTa.setText("");
     }
 
     @FXML
@@ -233,6 +237,7 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
             showAlert("Error", "UPCs not specified");
             return;
         }
+        notFoundUpcs.clear();
         List<String> upcs = Arrays.stream(upcTa.getText().split("\\r?\\n"))
                 .distinct()
                 .filter(u -> u.length() > 0)
@@ -252,14 +257,23 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
                 + (queriesTa.getText() == null || queriesTa.getText().isEmpty() ? "" : "\n")
                 + release.getTitle());
 
-        fullTitleTa.setText((fullTitleTa.getText() == null || fullTitleTa.getText().isEmpty() ? "" : "\n")
+        fullTitleTa.setText(fullTitleTa.getText()
+                + (fullTitleTa.getText() == null || fullTitleTa.getText().isEmpty() ? "" : "\n")
                 + release.toString()
         );
     }
 
     @Override
     public void onAllUpcConverted() {
-        log("All UPCs converted");
+        if (notFoundUpcs.isEmpty()) log("All UPCs converted");
+        else
+            log("UPCs conversion finished. The following UPCs were not found:\n"
+                    + String.join( "\n", notFoundUpcs));
         convertBtn.setDisable(false);
+    }
+
+    @Override
+    public void onUpcNotFound(String upc) {
+        notFoundUpcs.add(upc);
     }
 }
