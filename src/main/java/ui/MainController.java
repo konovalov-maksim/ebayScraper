@@ -120,7 +120,8 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
 
     @FXML
     private void startSearching() {
-        clearAll();
+        stop();
+        clearOutput();
         if (convertor != null) convertor.stop();
 
         if (queriesTa.getText() == null || queriesTa.getText().isEmpty()) {
@@ -157,14 +158,18 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @FXML
     private void clearAll() {
         stop();
-        resultsSet.clear();
-        results.clear();
-        table.refresh();
+        clearOutput();
         stopBtn.setDisable(true);
         searchingBtn.setDisable(false);
         queriesTa.setText("");
         upcTa.setText("");
         fullTitleTa.setText("");
+    }
+
+    private void clearOutput(){
+        resultsSet.clear();
+        results.clear();
+        table.refresh();
     }
 
     @FXML
