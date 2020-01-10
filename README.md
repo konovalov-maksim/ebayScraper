@@ -17,7 +17,11 @@ Ebay Scraper - is a tool that allows to mass extract data from Ebay.com by query
 
 ### Launch
 To launch the app you must specify the Ebay App Id ([get it](https://developer.ebay.com/))
+
 To convert UPC you must also specify the developer token Discogs ([get it](https://www.discogs.com/developers/))
+
 These keys should be placed in the files below accordingly:
+
 \app\key.txt
+
 \app\discogs_token.txt
