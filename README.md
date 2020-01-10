@@ -9,7 +9,7 @@ Ebay Scraper - is a tool that allows to mass extract data from Ebay.com by query
 ![screenshot-1](https://user-images.githubusercontent.com/49783652/72157230-6fc6d980-33c8-11ea-9c1d-3ad6371d5879.png)
 
 #### Features:
-- active items quantity and sold items quantity extraction
+- Active items quantity and sold items quantity extraction
 - AVG cost of active and sold items calculation 
 - Multithread data extraction
 - Category and item condition filters
@@ -18,7 +18,7 @@ Ebay Scraper - is a tool that allows to mass extract data from Ebay.com by query
 ### Launch
 To launch the app you must specify the Ebay App Id ([get it](https://developer.ebay.com/))
 
-To convert UPC you must also specify the developer token Discogs ([get it](https://www.discogs.com/developers/))
+To convert UPC you must also specify the developer Discogs token ([get it](https://www.discogs.com/developers/))
 
 These keys should be placed in the files below accordingly:
 
