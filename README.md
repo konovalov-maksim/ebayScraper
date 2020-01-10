@@ -4,7 +4,7 @@
 
 Ebay Scraper - is a tool that allows to mass extract data from Ebay.com by query list.
 
-![download](https://user-images.githubusercontent.com/49783652/70123296-6b99f480-1683-11ea-8f71-ac9d1e14fd54.png) Скачать релиз (v1.0): [EbayScraper-1.0.exe + JRE](https://github.com/konovalov-maksim/ebay_scraper/releases/download/1.0.0/ebay_scraper.zip) (77.2 Mb)
+![download](https://user-images.githubusercontent.com/49783652/70123296-6b99f480-1683-11ea-8f71-ac9d1e14fd54.png) Download release (v1.0): [EbayScraper-1.0.exe + JRE](https://github.com/konovalov-maksim/ebay_scraper/releases/download/1.0.0/ebay_scraper.zip) (77.2 Mb)
 
 ![screenshot-1](https://user-images.githubusercontent.com/49783652/72157230-6fc6d980-33c8-11ea-9c1d-3ad6371d5879.png)
 
