@@ -1,5 +1,8 @@
 package ui;
 
+import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
+import com.sun.javafx.application.HostServicesDelegate;
+import core.entities.Result;
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
@@ -46,7 +49,11 @@ public class TableContextMenu extends ContextMenu {
         });
         copyItem.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN));
 
-        this.getItems().addAll(copyItem);
+        //Items search URL
+        MenuItem activeItemsUrlItem = new MenuItem("Show active items");
+        MenuItem soldItemsUrlItem = new MenuItem("Show sold items");
+
+        this.getItems().addAll(copyItem, activeItemsUrlItem, soldItemsUrlItem);
 
         table.setRowFactory(c -> {
             TableRow<S> row = new TableRow<>();
@@ -60,5 +67,12 @@ public class TableContextMenu extends ContextMenu {
         return this.getItems().get(0);
     }
 
+    public MenuItem getActiveUrlItem() {
+        return this.getItems().get(1);
+    }
+
+    public MenuItem getSoldUrlItem() {
+        return this.getItems().get(2);
+    }
 
 }

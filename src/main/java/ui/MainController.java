@@ -9,14 +9,21 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MainController implements Initializable, Logger, ItemsSeeker.ResultsLoadingListener, UpcConvertor.ConvertorListener {
@@ -102,6 +109,10 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         });
         table.setItems(results);
         tableContextMenu = new TableContextMenu(table);
+        tableContextMenu.getActiveUrlItem().setOnAction(a ->
+                openUrl(table.getSelectionModel().getSelectedItem().getSearchUrlActive()));
+        tableContextMenu.getSoldUrlItem().setOnAction(a ->
+                openUrl(table.getSelectionModel().getSelectedItem().getSearchUrlSold()));
 
         searchingBtn.setTooltip(new Tooltip("Start searching for items"));
         clearBtn.setTooltip(new Tooltip("Clear all results"));
@@ -116,7 +127,6 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
         searchingBtn.setDisable(false);
         stopBtn.setDisable(true);
     }
-
 
     @FXML
     private void startSearching() {
@@ -280,5 +290,14 @@ public class MainController implements Initializable, Logger, ItemsSeeker.Result
     @Override
     public void onUpcNotFound(String upc) {
         notFoundUpcs.add(upc);
+    }
+
+    private void openUrl(String url) {
+        try {
+            Desktop.getDesktop().browse(new URI(url));
+        } catch (Exception e) {
+            log("Failed to open URL");
+            e.printStackTrace();
+        }
     }
 }

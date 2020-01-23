@@ -14,7 +14,7 @@ public class Result {
     private int activeItemsTotal;
     private int completeItemsTotal;
     private Status status;
-
+    private String searchUrl;
 
     public Result(String query) {
         this.query = query;
@@ -154,6 +154,23 @@ public class Result {
 
     public void setCompleteItemsTotal(int completeItemsTotal) {
         this.completeItemsTotal = completeItemsTotal;
+    }
+
+    public String getSearchUrl() {
+        return searchUrl;
+    }
+
+    public void setSearchUrl(String searchUrl) {
+        if (this.searchUrl == null)
+            this.searchUrl = searchUrl;
+    }
+
+    public String getSearchUrlActive() {
+        return searchUrl == null ? null : searchUrl + "&_sop=16";
+    }
+
+    public String getSearchUrlSold() {
+        return searchUrl == null ? null : searchUrl + "&_sop=16&rt=nc&LH_Sold=1&LH_Complete=1";
     }
 }
 

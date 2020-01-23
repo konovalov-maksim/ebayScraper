@@ -159,7 +159,6 @@ public class ItemsSeeker {
                 log("Active items loading is finished. Starting loading of complete items");
                 callType = CallType.COMPLETED;
                 unprocessed.addAll(results.keySet());
-//                sendNewRequests();
             } else {
                 onFinish();
             }
@@ -232,6 +231,14 @@ public class ItemsSeeker {
                 log("Item: " + item.toString());
 
                 result.addItem(item);
+            }
+            //Search URL
+            if (callType.equals(CallType.ACTIVE)) {
+                String searchUrl = root.getAsJsonArray(callType.getRootName())
+                        .get(0).getAsJsonObject()
+                        .get("itemSearchURL").getAsJsonArray()
+                        .get(0).getAsString();
+                result.setSearchUrl(searchUrl);
             }
 
             result.setIsSuccess(true);
