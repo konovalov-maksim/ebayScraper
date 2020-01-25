@@ -170,7 +170,7 @@ public class Result {
     }
 
     public String getSearchUrlSold() {
-        return searchUrl == null ? null : searchUrl + "&_sop=16&rt=nc&LH_Sold=1&LH_Complete=1";
+        return searchUrl == null ? null : searchUrl + "&_sop=16&rt=nc&LH_Sold=1";
     }
 }
 
